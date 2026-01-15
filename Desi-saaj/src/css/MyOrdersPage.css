@@ -1,0 +1,42 @@
+.my-orders-page {
+    padding: 40px 60px;
+}
+
+.my-orders-page h1 {
+    margin-bottom: 25px;
+}
+
+.orders-list {
+    display: grid;
+    gap: 20px;
+}
+
+.order-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #a3d9a5;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+}
+
+.status {
+    font-weight: 600;
+}
+
+.status.processing {
+    color: orange;
+}
+
+.status.shipped {
+    color: blue;
+}
+
+.status.delivered {
+    color: green;
+}
+
+.order-card {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}

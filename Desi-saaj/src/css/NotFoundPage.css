@@ -1,0 +1,16 @@
+.notfound-page-container {
+    padding: 40px 50px;
+    text-align: center;
+}
+
+.notfound-title {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #A3D9A5;
+}
+
+.notfound-text {
+    color: #555;
+    font-size: 18px;
+}

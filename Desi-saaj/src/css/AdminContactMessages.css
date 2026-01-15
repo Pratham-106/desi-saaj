@@ -1,0 +1,66 @@
+.messages-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 20px;
+}
+
+.message-card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
+}
+
+.message-card.unread {
+    border-left: 5px solid #f3c892;
+}
+
+.message-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.message-header h3 {
+    margin: 0;
+}
+
+.message-email {
+    font-size: 14px;
+    color: #666;
+    margin: 6px 0;
+}
+
+.message-text {
+    margin-top: 10px;
+    font-size: 15px;
+}
+
+.unread-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #f3c892;
+    color: #1f1f1f;
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.delete-btn {
+    margin-top: 12px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    background: #d9363e;
+}

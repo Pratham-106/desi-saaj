@@ -1,0 +1,213 @@
+/* ================================
+   SHOP PAGE WRAPPER
+================================ */
+.shop-page-container {
+    padding: 40px 50px;
+    background-color: #f9fdf9;
+}
+
+/* PAGE TITLE */
+.shop-title {
+    font-size: 34px;
+    font-weight: 700;
+    margin-bottom: 25px;
+    color: #1a1a1a;
+}
+
+/* ================================
+   CATEGORY TABS
+================================ */
+.shop-tabs {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 30px;
+}
+
+.shop-tab {
+    padding: 10px 20px;
+    border-radius: 22px;
+    border: 2px solid #a3d9a5;
+    background: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.shop-tab:hover {
+    background: #e8f7ea;
+}
+
+.shop-tab.active {
+    background: #a3d9a5;
+    color: #1a1a1a;
+}
+
+/* ================================
+   PRODUCTS GRID
+================================ */
+.shop-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 24px;
+}
+
+/* ================================
+   PRODUCT CARD
+================================ */
+.shop-product-card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px;
+    border: 1.5px solid #e3f3e4;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.shop-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(163, 217, 165, 0.35);
+    border-color: #a3d9a5;
+}
+
+/* ------------ Fix: content takes space, button stays at bottom ------------ */
+.card-content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* ================================
+   PRODUCT IMAGE
+================================ */
+.shop-product-card img {
+    width: 100%;
+    height: 260px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #fafafa;
+    margin-bottom: 10px;
+}
+
+/* ================================
+   PRODUCT NAME
+================================ */
+.shop-product-card h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 4px 0 6px;
+    line-height: 1.4;
+}
+
+.product-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* ================================
+   PRICE
+================================ */
+.price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2f7d32;
+    margin-top: 6px;
+    margin-bottom: 12px;
+}
+
+/* ================================
+   VIEW BUTTON — Gradient Pill
+================================ */
+.view-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 12px;
+    width: 100%;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #2e7d32, #63c168);
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: none;
+    cursor: pointer;
+    transition: 0.25s;
+    box-shadow: 0 6px 16px rgba(46, 125, 50, 0.3);
+    margin-top: auto;
+    text-decoration: none;
+}
+
+.view-btn:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 10px 26px rgba(46, 125, 50, 0.35);
+}
+
+.view-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 10px rgba(46, 125, 50, 0.22);
+}
+
+.view-btn .view-icon {
+    display: flex;
+    width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================================
+   STATES
+================================ */
+.loading-text,
+.empty-text {
+    font-size: 15px;
+    color: #555;
+    margin-top: 20px;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+    .shop-page-container {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 600px) {
+    .shop-page-container {
+        padding: 20px;
+    }
+
+    .shop-title {
+        font-size: 28px;
+    }
+
+    .shop-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .shop-product-card img {
+        height: 220px;
+    }
+}
+
+@media (max-width: 420px) {
+    .view-btn {
+        padding: 9px 10px;
+        font-size: 13px;
+        gap: 6px;
+    }
+
+    .view-btn .view-icon {
+        width: 16px;
+        height: 16px;
+    }
+}

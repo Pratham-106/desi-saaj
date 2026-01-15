@@ -1,0 +1,86 @@
+.order-detail {
+    padding: 40px 60px;
+}
+
+.order-box {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #a3d9a5;
+    margin-bottom: 30px;
+}
+
+.status-timeline {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.status-timeline .step {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.status-timeline .dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #666;
+    z-index: 2;
+    border: 3px solid rgba(0,0,0,0.03);
+}
+
+.status-timeline .step .label {
+    margin-left: 8px;
+    font-weight: 600;
+    color: #444;
+}
+
+.status-timeline .connector {
+    width: 60px;
+    height: 4px;
+    background: #eee;
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.status-timeline .step.active .dot {
+    background: linear-gradient(135deg, #66bb6a, #43a047);
+    color: white;
+    box-shadow: 0 4px 10px rgba(66,165,60,0.2);
+}
+
+.status-timeline .step.active + .connector {
+    background: linear-gradient(90deg, #66bb6a, #43a047);
+}
+
+.order-item {
+    display: flex;
+    gap: 20px;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.order-item img {
+    width: 90px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.order-summary {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.status {
+    font-weight: 600;
+    color: green;
+}

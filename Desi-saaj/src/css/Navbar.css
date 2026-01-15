@@ -1,0 +1,355 @@
+/* =========================
+   NAVBAR BASE (COMPACTED)
+========================= */
+
+:root{
+    --primary: #2e7d32;
+    --primary-dark: #1b5e20;
+    --accent: #66bb6a;
+    --muted: #666666;
+    --bg: #ffffff;
+    --surface: #f7f9f6;
+    --border: #e8f5e9;
+    --danger: #ef5350;
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 24px;
+    background: linear-gradient(135deg, #ffffff, #f1faee);
+    border-bottom: 2px solid rgba(46, 125, 50, 0.18);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* =========================
+   LOGO
+========================= */
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary);
+    transition: transform 0.18s ease, color 0.18s ease;
+}
+
+.navbar-logo:hover {
+    transform: scale(1.04);
+    color: var(--primary-dark);
+}
+
+.logo-img {
+    height: auto;
+    width: auto;
+    max-height: 50px;
+    /* bigger, balanced */
+    object-fit: contain;
+}
+
+/* =========================
+   HAMBURGER MENU
+========================= */
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    gap: 5px;
+    padding: 8px;
+    z-index: 101;
+}
+
+.hamburger-line {
+    width: 24px;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.hamburger-line.active:nth-child(1) {
+    transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger-line.active:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger-line.active:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* =========================
+   NAV LINKS
+========================= */
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    /* reduced gap */
+    margin: 0 auto;
+}
+
+.nav-link {
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1f331f !important;
+    position: relative;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 8px;
+}
+
+.nav-link:hover {
+    color: var(--primary) !important;
+    background: rgba(46,125,50,0.06);
+    transform: translateY(-1px);
+}
+
+.nav-link.active {
+    color: var(--primary-dark);
+    font-weight: 700;
+}
+
+.nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 8px;
+    bottom: -6px;
+    width: calc(100% - 16px);
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 4px;
+}
+
+.cart-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--danger);
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* ensure the absolute badge uses nav-link as its reference */
+.nav-link { position: relative; }
+
+/* =========================
+   AUTH SECTION
+========================= */
+
+.nav-auth {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+}
+
+.user-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: rgba(102,187,106,0.08);
+    border-radius: 10px;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.user-section:hover {
+    background: rgba(102,187,106,0.12);
+    transform: translateY(-1px);
+}
+
+.user-avatar {
+    width: 34px;
+    height: 34px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    color: white;
+    border-radius: 50%;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-greeting {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+.view-orders {
+    font-size: 12px;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.view-orders:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    padding: 6px 10px;
+    font-size: 15px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.logout-btn:hover {
+    background: rgba(239,83,80,0.08);
+}
+
+/* =========================
+   AUTH BUTTONS
+========================= */
+
+.nav-btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.login-btn {
+    color: var(--primary);
+    border: 2px solid var(--primary);
+    background: white;
+}
+
+.login-btn:hover {
+    background: rgba(46,125,50,0.06);
+}
+
+.signup-btn {
+    color: white;
+    border: none;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 900px) {
+    .navbar {
+        padding: 6px 20px;
+    }
+
+    .nav-links {
+        gap: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .nav-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: white;
+        padding: 14px 0;
+        border-bottom: 2px solid #e8f5e9;
+        max-height: 0;
+        overflow: hidden;
+        transition: 0.3s;
+    }
+
+    .nav-links.active {
+        max-height: 350px;
+    }
+
+    .user-details {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        padding: 6px 12px;
+    }
+
+    .logo-img {
+        max-height: 42px;
+    }
+
+    .nav-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .cart-badge { width:16px; height:16px; font-size:10px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navbar-logo, .nav-link, .hamburger-line, .user-section { transition: none !important; }
+}
+
+/* ADMIN SECTION */
+.admin-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    background: rgba(102, 187, 106, 0.08);
+    border-radius: 10px;
+}
+
+.admin-greeting {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1b5e20;
+}
+
+.admin-dashboard-btn {
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    color: white;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.admin-dashboard-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(76, 175, 80, 0.12);
+}

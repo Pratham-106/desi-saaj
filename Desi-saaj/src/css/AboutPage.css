@@ -1,0 +1,124 @@
+/* ================================
+   ABOUT PAGE WRAPPER
+================================ */
+.about-page {
+    background-color: #f9fdf9;
+    color: #1a1a1a;
+}
+
+/* ================================
+   HERO SECTION
+================================ */
+.about-hero {
+    padding: 80px 20px;
+    text-align: center;
+    background: linear-gradient(135deg,
+            #a3d9a5 0%,
+            #c6edc7 50%,
+            #ffffff 100%);
+}
+
+.about-hero h1 {
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.about-hero p {
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto;
+    color: #333;
+}
+
+/* ================================
+   CONTENT SECTIONS
+================================ */
+.about-section {
+    padding: 60px 80px;
+}
+
+.about-section h2 {
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.about-section p {
+    font-size: 16px;
+    line-height: 1.8;
+    max-width: 800px;
+    margin-bottom: 14px;
+    color: #444;
+}
+
+/* ================================
+   VALUES
+================================ */
+.about-values {
+    padding: 60px 80px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.value-card {
+    background: white;
+    border-radius: 16px;
+    padding: 25px;
+    border: 2px solid #a3d9a5;
+    box-shadow: 0 6px 20px rgba(163, 217, 165, 0.35);
+}
+
+.value-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.value-card p {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.6;
+}
+
+/* ================================
+   PROMISE SECTION
+================================ */
+.promise {
+    background-color: #ffffff;
+    border-top: 2px solid #e3f3e4;
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 900px) {
+
+    .about-section,
+    .about-values {
+        padding: 50px 40px;
+    }
+
+    .about-values {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .about-hero h1 {
+        font-size: 32px;
+    }
+
+    .about-hero p {
+        font-size: 16px;
+    }
+
+    .about-section h2 {
+        font-size: 26px;
+    }
+
+    .about-section,
+    .about-values {
+        padding: 40px 20px;
+    }
+}
