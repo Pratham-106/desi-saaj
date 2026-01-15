@@ -2,7 +2,8 @@ import { useState } from "react";
 import axios from "axios";
 import "./../css/ContactPage.css";
 
-const API = "http://localhost:5000/api";
+/* ✅ DEPLOYMENT SAFE API */
+const API = import.meta.env.VITE_API_URL;
 
 export default function ContactPage() {
   const [form, setForm] = useState({
@@ -79,7 +80,11 @@ export default function ContactPage() {
             required
           />
 
-          <button type="submit" className="contact-btn" disabled={loading}>
+          <button
+            type="submit"
+            className="contact-btn"
+            disabled={loading}
+          >
             {loading ? "Sending..." : "Send Message"}
           </button>
         </form>

@@ -1,19 +1,33 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import { useUser } from "../context/user/useUser";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./../css/MyOrdersPage.css";
+
+/* ✅ DEPLOYMENT SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+axios.get(`${API}/orders/my-orders`)
+
 
 export default function MyOrdersPage() {
   const { user } = useUser();
+  const navigate = useNavigate();
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  /* 🔐 GUARD: must be logged in */
   useEffect(() => {
+    if (!user || !user.token) {
+      navigate("/login");
+      return;
+    }
+
     const fetchOrders = async () => {
       try {
         const { data } = await axios.get(
-          "http://localhost:5000/api/orders/my-orders",
+          `${API}/orders/my-orders`,
           {
             headers: {
               Authorization: `Bearer ${user.token}`,
@@ -22,15 +36,15 @@ export default function MyOrdersPage() {
         );
 
         setOrders(data);
-        setLoading(false);
       } catch (error) {
-        console.error(error);
+        console.error("Fetch orders error:", error);
+      } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [user]);
+  }, [user, navigate]);
 
   return (
     <div className="my-orders-page">

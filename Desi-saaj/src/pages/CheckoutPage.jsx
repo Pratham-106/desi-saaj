@@ -1,15 +1,17 @@
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/cart/useCart";
 import { useUser } from "../context/user/useUser";
 import "./../css/Checkout.css";
+
+/* ✅ DEPLOYMENT SAFE API */
+const API = import.meta.env.VITE_API_URL;
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { cart } = useCart();
   const { user } = useUser();
 
-  /* Redirect if cart is empty */
+  /* 🔐 GUARD: Redirect if cart is empty */
   if (!cart.length) {
     navigate("/cart");
     return null;
@@ -36,33 +38,47 @@ export default function CheckoutPage() {
       <h1>Checkout</h1>
 
       <div className="checkout-layout">
-        {/* Order Summary */}
+        {/* ORDER SUMMARY */}
         <div className="checkout-summary">
           <h2>Order Summary</h2>
+
           {cart.map((item) => (
-            <div key={`${item._id}-${item.size}`} className="checkout-item">
+            <div
+              key={`${item._id}-${item.size}`}
+              className="checkout-item"
+            >
               <img
-                src={`http://localhost:5000${item.images[0]}`}
+                src={`${API.replace("/api", "")}${item.images[0]}`}
                 alt={item.name}
               />
+
               <div>
                 <p>{item.name}</p>
-                <p>Size: {item.size} | Qty: {item.qty || 1}</p>
-                <p>₹{item.price} x {item.qty || 1}</p>
+                <p>
+                  Size: {item.size} | Qty: {item.qty || 1}
+                </p>
+                <p>
+                  ₹{item.price} x {item.qty || 1}
+                </p>
               </div>
             </div>
           ))}
 
           <hr />
+
           <div className="checkout-totals">
             <div>
               <span>Subtotal</span>
               <span>₹{subtotal}</span>
             </div>
+
             <div>
               <span>Delivery</span>
-              <span>{deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}</span>
+              <span>
+                {deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}
+              </span>
             </div>
+
             <div className="total">
               <span>Total</span>
               <span>₹{total}</span>
@@ -70,9 +86,12 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Proceed Button */}
+        {/* ACTION */}
         <div className="checkout-actions">
-          <button onClick={handleProceedToAddress} className="proceed-btn">
+          <button
+            onClick={handleProceedToAddress}
+            className="proceed-btn"
+          >
             Continue to Address
           </button>
         </div>

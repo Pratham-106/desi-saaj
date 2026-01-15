@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import "./../css/ShopPage.css";
 
-const API = "http://localhost:5000/api";
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = API.replace("/api", "");
 
 export default function ShopPages() {
   const [activeCategory, setActiveCategory] = useState("ALL");
@@ -42,12 +44,10 @@ export default function ShopPages() {
         {categories.map((cat) => (
           <button
             key={cat}
-            className={`shop-tab ${
-              activeCategory === cat ? "active" : ""
-            }`}
+            className={`shop-tab ${activeCategory === cat ? "active" : ""}`}
             onClick={() => setActiveCategory(cat)}
           >
-            {cat === "ALL" ? "All " : cat}
+            {cat === "ALL" ? "All" : cat}
           </button>
         ))}
       </div>
@@ -63,9 +63,11 @@ export default function ShopPages() {
             <div key={product._id} className="shop-product-card">
               <Link to={`/product/${product._id}`}>
                 <img
-                  src={`http://localhost:5000${
-                    product.images?.[0] || "/no-img.png"
-                  }`}
+                  src={
+                    product.images?.[0]
+                      ? `${BASE_URL}${product.images[0]}`
+                      : "/no-img.png"
+                  }
                   alt={product.name}
                   onError={(e) => (e.target.src = "/no-img.png")}
                 />

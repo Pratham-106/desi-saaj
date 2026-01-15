@@ -3,7 +3,8 @@ import axios from "axios";
 import AdminLayout from "../../components/AdminLayout";
 import "./../../css/AdminContactMessages.css";
 
-const API = "http://localhost:5000/api";
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function AdminContactMessages() {
   const [messages, setMessages] = useState([]);
@@ -24,7 +25,7 @@ export default function AdminContactMessages() {
     }
   };
 
-  /* 🔴 DELETE MESSAGE */
+  /* 🗑 DELETE MESSAGE */
   const deleteHandler = async (id) => {
     const confirmDelete = window.confirm(
       "Are you sure you want to delete this message?"
@@ -72,7 +73,6 @@ export default function AdminContactMessages() {
                 <span className="unread-badge">New</span>
               )}
 
-              {/* 🗑 DELETE BUTTON */}
               <button
                 className="delete-btn"
                 onClick={() => deleteHandler(msg._id)}

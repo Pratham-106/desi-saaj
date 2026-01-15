@@ -3,6 +3,9 @@ import axios from "axios";
 import AdminLayout from "../../components/AdminLayout";
 import "./../../css/AdminAddProduct.css";
 
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function AdminAddProduct() {
   const [formData, setFormData] = useState({
     name: "",
@@ -10,33 +13,32 @@ export default function AdminAddProduct() {
     stockStatus: "IN_STOCK",
     category: "",
     description: "",
-    tags: [], // 🔥 NEW
+    tags: [], // 🔥 TRENDING TAG
   });
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // Handle text & select inputs
+  /* Handle text & select inputs */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle checkbox (Trending)
+  /* 🔥 Trending checkbox */
   const handleTrendingChange = (e) => {
-    if (e.target.checked) {
-      setFormData({ ...formData, tags: ["TRENDING"] });
-    } else {
-      setFormData({ ...formData, tags: [] });
-    }
+    setFormData({
+      ...formData,
+      tags: e.target.checked ? ["TRENDING"] : [],
+    });
   };
 
-  // Handle image uploads
+  /* Handle image uploads */
   const handleImageChange = (e) => {
     setImages([...e.target.files]);
   };
 
-  // Submit form
+  /* Submit form */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -51,26 +53,24 @@ export default function AdminAddProduct() {
       data.append("category", formData.category);
       data.append("description", formData.description);
 
-      // 🔥 TAGS
+      /* 🔥 TAGS */
       formData.tags.forEach((tag) => {
         data.append("tags", tag);
       });
 
+      /* IMAGES */
       images.forEach((img) => {
         data.append("images", img);
       });
 
-      await axios.post(
-        "http://localhost:5000/api/products/add",
-        data,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      await axios.post(`${API}/products/add`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setMessage("✅ Product added successfully!");
+
       setFormData({
         name: "",
         price: "",
@@ -149,8 +149,8 @@ export default function AdminAddProduct() {
             </select>
           </div>
 
-          {/* 🔥 TRENDING CHECKBOX */}
-          <div className="form-group">
+          {/* 🔥 TRENDING */}
+          <div className="form-group checkbox-group">
             <label>
               <input
                 type="checkbox"
@@ -173,7 +173,7 @@ export default function AdminAddProduct() {
           </div>
 
           <div className="form-group">
-            <label>Upload 5 Images</label>
+            <label>Upload up to 5 Images</label>
             <input
               type="file"
               multiple

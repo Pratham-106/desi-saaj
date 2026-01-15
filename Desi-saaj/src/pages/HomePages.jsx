@@ -9,7 +9,8 @@ import trending1 from "./../assets/ds.jpeg";
 import trending2 from "./../assets/DS(1).jpeg";
 import trending3 from "./../assets/DS(2).jpeg";
 
-const API = "http://localhost:5000/api";
+/* ✅ DEPLOYMENT SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function HomePages() {
   const [trendingProducts, setTrendingProducts] = useState([]);
@@ -67,10 +68,9 @@ export default function HomePages() {
       {/* 🔥 TRENDING PRODUCTS */}
       <section className="featured-section">
         <div className="trending-header">
-        <h2 className="section-title">🔥 Trending Products</h2>
-        <span className="sub">Hot picks everyone’s loving</span>
+          <h2 className="section-title">🔥 Trending Products</h2>
+          <span className="sub">Hot picks everyone’s loving</span>
         </div>
-
 
         {loadingTrending ? (
           <p style={{ padding: "20px" }}>Loading trending products...</p>
@@ -87,7 +87,7 @@ export default function HomePages() {
                 key={product._id}
               >
                 <img
-                  src={`http://localhost:5000${product.images[0]}`}
+                  src={`${API.replace("/api", "")}${product.images[0]}`}
                   alt={product.name}
                 />
                 <div className="featured-info">
@@ -120,7 +120,8 @@ function Carousel({ slides = [], interval = 4000 }) {
   const goTo = (index) => setCurrent(index);
   const prev = () =>
     setCurrent((c) => (c - 1 + slides.length) % slides.length);
-  const next = () => setCurrent((c) => (c + 1) % slides.length);
+  const next = () =>
+    setCurrent((c) => (c + 1) % slides.length);
 
   return (
     <div className="carousel">

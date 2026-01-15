@@ -2,6 +2,9 @@ import { useCart } from "../context/cart/useCart";
 import { useNavigate } from "react-router-dom";
 import "./../css/CartPage.css";
 
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL;
+
 export default function CartPage() {
   const { cart, removeFromCart, updateQty } = useCart();
   const navigate = useNavigate();
@@ -12,7 +15,7 @@ export default function CartPage() {
     0
   );
 
-  /* ✅ SAFE DELIVERY */
+  /* ✅ SAFE DELIVERY (highest delivery charge in cart) */
   const deliveryCharge =
     cart.length > 0
       ? Math.max(...cart.map((item) => item.deliveryCharge || 0))
@@ -36,7 +39,7 @@ export default function CartPage() {
                 key={`${item._id}-${item.size}`}
               >
                 <img
-                  src={`http://localhost:5000${item.images[0]}`}
+                  src={`${API.replace("/api", "")}${item.images[0]}`}
                   alt={item.name}
                 />
 
@@ -49,7 +52,7 @@ export default function CartPage() {
 
                   <p className="cart-price">₹{item.price}</p>
 
-                  {/* QUANTITY */}
+                  {/* QUANTITY CONTROLS */}
                   <div className="qty-controls">
                     <button
                       disabled={(item.qty || 1) === 1}

@@ -6,13 +6,16 @@ import { useCheckout } from "../context/checkout/useCheckout";
 import { useUser } from "../context/user/useUser";
 import "./../css/Checkout.css";
 
+/* ✅ DEPLOYMENT SAFE API */
+const API = import.meta.env.VITE_API_URL;
+
 export default function CheckoutPlaceOrderPage() {
   const navigate = useNavigate();
   const { cart, clearCart } = useCart();
   const { address, paymentMethod, clearCheckout } = useCheckout();
   const { user } = useUser();
 
-  /* 🔐 HARD GUARD: user must exist */
+  /* 🔐 HARD GUARD: must be logged in */
   useEffect(() => {
     if (!user || !user.token) {
       navigate("/login", { replace: true });
@@ -50,7 +53,7 @@ export default function CheckoutPlaceOrderPage() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/orders",
+        `${API}/orders`,
         {
           orderItems: cart.map((item) => ({
             name: item.name,
@@ -108,7 +111,7 @@ export default function CheckoutPlaceOrderPage() {
               className="checkout-item"
             >
               <img
-                src={`http://localhost:5000${item.images[0]}`}
+                src={`${API.replace("/api", "")}${item.images[0]}`}
                 alt={item.name}
               />
               <div>
@@ -157,9 +160,7 @@ export default function CheckoutPlaceOrderPage() {
             <div>
               <span>Delivery</span>
               <span>
-                {deliveryCharge === 0
-                  ? "Free"
-                  : `₹${deliveryCharge}`}
+                {deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}
               </span>
             </div>
             <div className="total">

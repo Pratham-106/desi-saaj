@@ -4,24 +4,35 @@ import { useNavigate, Link } from "react-router-dom";
 import { useUser } from "../context/user/useUser";
 import "./../css/Auth.css";
 
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const navigate = useNavigate();
   const { login } = useUser();
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    setLoading(true);
+
     try {
-      const { data } = await axios.post(
-        "http://localhost:5000/api/users/register",
-        { name, email, password }
-      );
+      const { data } = await axios.post(`${API}/users/register`, {
+        name,
+        email,
+        password,
+      });
+
       login(data);
       navigate("/");
     } catch (error) {
       alert(error.response?.data?.message || "Register failed");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -40,6 +51,7 @@ export default function RegisterPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -51,6 +63,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -62,10 +75,13 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="auth-btn">Register</button>
+          <button type="submit" className="auth-btn" disabled={loading}>
+            {loading ? "Creating account..." : "Register"}
+          </button>
         </form>
 
         <p className="auth-footer">

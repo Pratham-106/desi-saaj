@@ -6,6 +6,8 @@ import { useCart } from "../context/cart/useCart";
 import "./../css/ProductDetailPage.css";
 import ProductComments from "../components/ProductComments";
 
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -19,9 +21,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(
-          `http://localhost:5000/api/products/${id}`
-        );
+        const res = await axios.get(`${API}/products/${id}`);
         setProduct(res.data);
         setMainImage(res.data.images[0]);
       } catch (error) {
@@ -75,13 +75,16 @@ export default function ProductDetailPage() {
     }
   };
 
+  /* ✅ BASE URL FOR IMAGES */
+  const IMAGE_BASE = API.replace("/api", "");
+
   return (
     <div className="product-detail-container">
       <div className="product-detail-content">
         {/* IMAGES */}
         <div className="product-images">
           <img
-            src={`http://localhost:5000${mainImage}`}
+            src={`${IMAGE_BASE}${mainImage}`}
             alt={product.name}
             className="main-image"
           />
@@ -90,7 +93,7 @@ export default function ProductDetailPage() {
             {product.images.map((img, index) => (
               <img
                 key={index}
-                src={`http://localhost:5000${img}`}
+                src={`${IMAGE_BASE}${img}`}
                 alt="thumb"
                 className={`thumbnail ${
                   mainImage === img ? "active" : ""
@@ -109,14 +112,12 @@ export default function ProductDetailPage() {
           <p className="price">₹{product.price}</p>
 
           {/* STOCK STATUS */}
-          <div className="stock-status">
-            {getStockLabel()}
-          </div>
+          <div className="stock-status">{getStockLabel()}</div>
 
           <p className="delivery-info">
             {product.deliveryCharge > 0
-              ? `🚚 Delivery Charge: ₹${product.deliveryCharge}`
-              : "🚚 Free Delivery"}
+              ? ` Delivery Charge: ₹${product.deliveryCharge}`
+              : " Free Delivery"}
           </p>
 
           <p className="description">{product.description}</p>
@@ -151,16 +152,17 @@ export default function ProductDetailPage() {
 
           {/* TRUST */}
           <div className="trust-info">
-            <p> Easy 7-Day Returns</p>
-            <p> Secure Payments</p>
+            <p>🔁 Easy 7-Day Returns</p>
+            <p>🔒 Secure Payments</p>
           </div>
         </div>
       </div>
-      <ProductComments
-  productId={product._id}
-  reviews={product.reviews || []}
-/>
 
+      {/* COMMENTS */}
+      <ProductComments
+        productId={product._id}
+        reviews={product.reviews || []}
+      />
     </div>
   );
 }

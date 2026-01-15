@@ -5,7 +5,9 @@ import { useUser } from "../context/user/useUser";
 import toast from "react-hot-toast";
 import "./../css/ProductComments.css";
 
-const API = "http://localhost:5000/api";
+/* ✅ DEPLOYMENT-SAFE API */
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 
 export default function ProductComments({ productId, reviews = [] }) {
   const { user } = useUser();
@@ -14,7 +16,9 @@ export default function ProductComments({ productId, reviews = [] }) {
   const [comment, setComment] = useState("");
   const [localReviews, setLocalReviews] = useState(reviews);
 
-  /* 🔵 ADD COMMENT */
+  /* =========================
+     ADD COMMENT
+  ========================= */
   const submitComment = async () => {
     if (!user) {
       navigate("/login");
@@ -39,13 +43,16 @@ export default function ProductComments({ productId, reviews = [] }) {
 
       setLocalReviews(res.data.reviews);
       setComment("");
-      toast.success("Comment added");
+      toast.success("Comment added successfully");
     } catch (error) {
+      console.error(error);
       toast.error("Failed to add comment");
     }
   };
 
-  /* ❤️ LIKE COMMENT */
+  /* =========================
+     LIKE / UNLIKE COMMENT
+  ========================= */
   const toggleLike = async (reviewId) => {
     if (!user) {
       navigate("/login");
@@ -64,13 +71,17 @@ export default function ProductComments({ productId, reviews = [] }) {
       );
 
       setLocalReviews((prev) =>
-        prev.map((r) =>
-          r._id === reviewId
-            ? { ...r, likes: new Array(res.data.likesCount) }
-            : r
+        prev.map((review) =>
+          review._id === reviewId
+            ? {
+                ...review,
+                likes: Array(res.data.likesCount).fill(1),
+              }
+            : review
         )
       );
     } catch (error) {
+      console.error(error);
       toast.error("Failed to like comment");
     }
   };
@@ -89,7 +100,9 @@ export default function ProductComments({ productId, reviews = [] }) {
           onChange={(e) => setComment(e.target.value)}
           disabled={!user}
         />
-        <button onClick={submitComment}>Post Comment</button>
+        <button onClick={submitComment} disabled={!user}>
+          Post Comment
+        </button>
       </div>
 
       {/* COMMENTS LIST */}
@@ -112,7 +125,7 @@ export default function ProductComments({ productId, reviews = [] }) {
                 className="like-btn"
                 onClick={() => toggleLike(review._id)}
               >
-                ❤️ {review.likes.length}
+                 {review.likes?.length || 0}
               </button>
             </div>
           ))}
