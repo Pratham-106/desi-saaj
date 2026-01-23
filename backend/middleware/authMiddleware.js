@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
 /* =========================
-   PROTECT ROUTES (USER)
+   PROTECT ROUTES (USER / ADMIN)
 ========================= */
 export const protect = async (req, res, next) => {
   let token;
@@ -16,19 +16,33 @@ export const protect = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // Handle admin token (id: "admin-id")
-      if (decoded.id === "admin-id") {
-        req.user = { _id: "admin-id", isAdmin: true };
-      } else {
-        req.user = await User.findById(decoded.id).select("-password");
+      // 🔐 ADMIN TOKEN HANDLING
+      if (decoded.isAdmin) {
+        req.user = {
+          _id: decoded.id,
+          isAdmin: true,
+        };
+        return next();
       }
 
+      // 👤 NORMAL USER
+      const user = await User.findById(decoded.id).select("-password");
+
+      if (!user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      req.user = user;
       next();
     } catch (error) {
-      res.status(401).json({ message: "Not authorized, token failed" });
+      return res.status(401).json({
+        message: "Not authorized, token failed",
+      });
     }
-  } else if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
+  } else {
+    return res.status(401).json({
+      message: "Not authorized, no token",
+    });
   }
 };
 
@@ -39,6 +53,8 @@ export const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
-    res.status(403).json({ message: "Admin access denied" });
+    return res.status(403).json({
+      message: "Admin access denied",
+    });
   }
 };

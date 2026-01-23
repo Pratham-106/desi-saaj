@@ -2,7 +2,18 @@ import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-/* REGISTER */
+/* =========================
+   TOKEN
+========================= */
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
+};
+
+/* =========================
+   REGISTER
+========================= */
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -31,7 +42,9 @@ export const registerUser = async (req, res) => {
   }
 };
 
-/* LOGIN */
+/* =========================
+   LOGIN
+========================= */
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -57,7 +70,9 @@ export const loginUser = async (req, res) => {
   }
 };
 
-/* GET ALL USERS (ADMIN) */
+/* =========================
+   GET ALL USERS (ADMIN)
+========================= */
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find({}).select("-password");
@@ -67,9 +82,21 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-/* TOKEN */
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "30d",
-  });
+/* =========================
+   DELETE USER (ADMIN) 🔥
+========================= */
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await user.deleteOne();
+
+    res.json({ message: "User deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
