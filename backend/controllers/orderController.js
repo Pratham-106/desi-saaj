@@ -141,8 +141,11 @@ export const deleteOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Only Delivered Orders Can Be Deleted
-    if (order.status.toLowerCase() !== "delivered") {
+    // ✅ Safe status check (prevents crash)
+    const status = order.status?.toLowerCase();
+
+    // ✅ Allow delete only if Delivered
+    if (status !== "delivered" && !order.isDelivered) {
       return res.status(400).json({
         message: "Only delivered orders can be deleted",
       });
@@ -154,8 +157,10 @@ export const deleteOrder = async (req, res) => {
       message: "Order deleted successfully ✅",
     });
   } catch (error) {
+    console.error("Delete order error:", error);
+
     res.status(500).json({
-      message: "Failed to delete order",
+      message: "Server error deleting order",
       error: error.message,
     });
   }
