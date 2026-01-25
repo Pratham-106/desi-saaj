@@ -7,9 +7,6 @@ import "./../css/MyOrdersPage.css";
 /* ✅ DEPLOYMENT SAFE API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-axios.get(`${API}/orders/my-orders`)
-
-
 export default function MyOrdersPage() {
   const { user } = useUser();
   const navigate = useNavigate();
@@ -26,16 +23,13 @@ export default function MyOrdersPage() {
 
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.get(
-          `${API}/orders/my-orders`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
+        const { data } = await axios.get(`${API}/orders/my-orders`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
 
-        setOrders(data);
+        setOrders(data || []);
       } catch (error) {
         console.error("Fetch orders error:", error);
       } finally {
