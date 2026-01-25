@@ -7,17 +7,23 @@ import { useNavigate } from "react-router-dom";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+// ✅ Base URL for images (Render backend, not localhost)
+const BASE_URL = API.replace("/api", "");
+
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
   const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
 
-  // Fetch products
+  /* ============================
+     FETCH PRODUCTS
+  ============================ */
   const fetchProducts = async () => {
     try {
       const res = await axios.get(`${API}/products`);
-      setProducts(res.data);
+      setProducts(res.data || []);
     } catch (error) {
       console.error("Failed to fetch products", error);
       toast.error("Failed to fetch products");
@@ -26,25 +32,30 @@ export default function AdminProducts() {
     }
   };
 
-  // Delete product
+  /* ============================
+     DELETE PRODUCT (ADMIN)
+  ============================ */
   const deleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
       await axios.delete(`${API}/products/${id}`, {
         headers: {
-          Authorization: `Bearer ${adminInfo.token}`
-        }
+          Authorization: `Bearer ${adminInfo.token}`,
+        },
       });
-      setProducts(products.filter((product) => product._id !== id));
-      toast.success("Product deleted successfully");
+
+      setProducts((prev) => prev.filter((p) => p._id !== id));
+      toast.success("Product deleted successfully ✅");
     } catch (error) {
       console.error("Failed to delete product", error);
-      toast.error("Failed to delete product");
+      toast.error(error.response?.data?.message || "Failed to delete product");
     }
   };
 
-  // Edit product
+  /* ============================
+     EDIT PRODUCT
+  ============================ */
   const editProduct = (id) => {
     navigate(`/admin/edit-product/${id}`);
   };
@@ -58,7 +69,11 @@ export default function AdminProducts() {
       <div className="admin-products-container">
         <div className="products-header">
           <h1>All Products</h1>
-          <button className="add-product-link" onClick={() => navigate("/admin/add-product")}>
+
+          <button
+            className="add-product-link"
+            onClick={() => navigate("/admin/add-product")}
+          >
             + Add Product
           </button>
         </div>
@@ -89,17 +104,24 @@ export default function AdminProducts() {
                 ) : (
                   products.map((product) => (
                     <tr key={product._id}>
+                      {/* ✅ IMAGE FIXED */}
                       <td>
                         <img
-                          src={`http://localhost:5000${product.images[0]}`}
+                          src={
+                            product.images?.length > 0
+                              ? `${BASE_URL}${product.images[0]}`
+                              : "/placeholder.png"
+                          }
                           alt={product.name}
                           className="product-img"
                         />
                       </td>
+
                       <td>{product.name}</td>
                       <td>{product.category}</td>
                       <td>₹{product.price}</td>
                       <td>{product.stock}</td>
+
                       <td className="action-cells">
                         <button
                           className="edit-btn"
@@ -107,6 +129,7 @@ export default function AdminProducts() {
                         >
                           Edit
                         </button>
+
                         <button
                           className="delete-btn"
                           onClick={() => deleteProduct(product._id)}
