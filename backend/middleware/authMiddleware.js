@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-/* =========================
-   PROTECT ROUTES (USER / ADMIN)
-========================= */
+/* ============================
+   PROTECT MIDDLEWARE
+============================ */
 export const protect = async (req, res, next) => {
   let token;
 
@@ -16,45 +16,31 @@ export const protect = async (req, res, next) => {
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-      // 🔐 ADMIN TOKEN HANDLING
-      if (decoded.isAdmin) {
-        req.user = {
-          _id: decoded.id,
-          isAdmin: true,
-        };
+      // ✅ Allow hardcoded admin token
+      if (decoded.id === "admin-id") {
+        req.user = decoded;
         return next();
       }
 
-      // 👤 NORMAL USER
-      const user = await User.findById(decoded.id).select("-password");
+      // ✅ Normal users from DB
+      req.user = await User.findById(decoded.id).select("-password");
 
-      if (!user) {
-        return res.status(401).json({ message: "User not found" });
-      }
-
-      req.user = user;
       next();
     } catch (error) {
-      return res.status(401).json({
-        message: "Not authorized, token failed",
-      });
+      res.status(401).json({ message: "Not authorized, token failed" });
     }
   } else {
-    return res.status(401).json({
-      message: "Not authorized, no token",
-    });
+    res.status(401).json({ message: "Not authorized, no token" });
   }
 };
 
-/* =========================
-   ADMIN ONLY
-========================= */
+/* ============================
+   ADMIN MIDDLEWARE
+============================ */
 export const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
-    return res.status(403).json({
-      message: "Admin access denied",
-    });
+    res.status(401).json({ message: "Not authorized as admin" });
   }
 };
