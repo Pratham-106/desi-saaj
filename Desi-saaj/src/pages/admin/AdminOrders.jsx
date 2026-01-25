@@ -8,22 +8,23 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function AdminOrders() {
   const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("placed");
 
+  /* ============================
+     FETCH ALL ORDERS (ADMIN)
+  ============================ */
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.get(
-          `${API}/orders/admin/all`,
-          {
-            headers: {
-              Authorization: `Bearer ${adminInfo.token}`,
-            },
-          }
-        );
+        const { data } = await axios.get(`${API}/orders/admin/all`, {
+          headers: {
+            Authorization: `Bearer ${adminInfo.token}`,
+          },
+        });
 
         setOrders(data || []);
         setLoading(false);
@@ -38,6 +39,9 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
+  /* ============================
+     UPDATE ORDER STATUS
+  ============================ */
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const { data } = await axios.put(
@@ -50,18 +54,56 @@ export default function AdminOrders() {
         }
       );
 
-      setOrders((prev) => prev.map((o) => (o._id === orderId ? { ...o, status: data.status } : o)));
-      toast.success("Order status updated");
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === orderId ? { ...o, status: data.status } : o
+        )
+      );
+
+      toast.success("Order status updated ✅");
     } catch (err) {
       console.error(err);
       toast.error("Failed to update status");
     }
   };
 
-  // Group orders by status
-  const placedOrders = orders.filter((o) => !o.status || o.status.toLowerCase() === "placed");
-  const processingOrders = orders.filter((o) => o.status && o.status.toLowerCase() === "processing");
-  const deliveredOrders = orders.filter((o) => o.status && o.status.toLowerCase() === "delivered");
+  /* ============================
+     ✅ DELETE DELIVERED ORDER
+  ============================ */
+  const handleDeleteOrder = async (orderId) => {
+    if (!window.confirm("Delete this delivered order permanently?")) return;
+
+    try {
+      await axios.delete(`${API}/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${adminInfo.token}`,
+        },
+      });
+
+      toast.success("Order deleted successfully ✅");
+
+      // ✅ Remove order instantly from UI
+      setOrders((prev) => prev.filter((o) => o._id !== orderId));
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to delete order");
+    }
+  };
+
+  /* ============================
+     GROUP ORDERS BY STATUS
+  ============================ */
+  const placedOrders = orders.filter(
+    (o) => !o.status || o.status.toLowerCase() === "placed"
+  );
+
+  const processingOrders = orders.filter(
+    (o) => o.status && o.status.toLowerCase() === "processing"
+  );
+
+  const deliveredOrders = orders.filter(
+    (o) => o.status && o.status.toLowerCase() === "delivered"
+  );
 
   const getOrdersForTab = () => {
     switch (activeTab) {
@@ -76,6 +118,9 @@ export default function AdminOrders() {
     }
   };
 
+  /* ============================
+     RENDER ORDER CARD
+  ============================ */
   const renderOrderCard = (order) => (
     <div key={order._id} className="admin-order-card">
       <div className="order-row">
@@ -113,13 +158,16 @@ export default function AdminOrders() {
         <span>{new Date(order.createdAt).toLocaleDateString()}</span>
       </div>
 
+      {/* ✅ Status Dropdown */}
       <div className="order-row">
         <span>Status:</span>
         <span>
           <select
             className="status-select"
             value={order.status || "Placed"}
-            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+            onChange={(e) =>
+              handleStatusChange(order._id, e.target.value)
+            }
           >
             <option value="Placed">Placed</option>
             <option value="Processing">Processing</option>
@@ -128,6 +176,7 @@ export default function AdminOrders() {
         </span>
       </div>
 
+      {/* ✅ Order Items */}
       <div className="order-items">
         <h4>Items</h4>
         {(order.orderItems || []).map((item, index) => (
@@ -145,9 +194,22 @@ export default function AdminOrders() {
           </div>
         ))}
       </div>
+
+      {/* ✅ DELETE BUTTON ONLY FOR DELIVERED */}
+      {order.status?.toLowerCase() === "delivered" && (
+        <button
+          className="delete-order-btn"
+          onClick={() => handleDeleteOrder(order._id)}
+        >
+          🗑️ Delete Delivered Order
+        </button>
+      )}
     </div>
   );
 
+  /* ============================
+     MAIN RETURN UI
+  ============================ */
   return (
     <AdminLayout>
       <div className="admin-orders-page">
@@ -167,33 +229,49 @@ export default function AdminOrders() {
 
         {!loading && orders.length > 0 && (
           <>
+            {/* ✅ Tabs */}
             <div className="orders-tabs">
               <button
-                className={`tab-btn ${activeTab === "placed" ? "active" : ""}`}
+                className={`tab-btn ${
+                  activeTab === "placed" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("placed")}
               >
                 📦 Placed
                 <span className="tab-count">{placedOrders.length}</span>
               </button>
+
               <button
-                className={`tab-btn ${activeTab === "processing" ? "active" : ""}`}
+                className={`tab-btn ${
+                  activeTab === "processing" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("processing")}
               >
                 ⚙️ Processing
-                <span className="tab-count">{processingOrders.length}</span>
+                <span className="tab-count">
+                  {processingOrders.length}
+                </span>
               </button>
+
               <button
-                className={`tab-btn ${activeTab === "delivered" ? "active" : ""}`}
+                className={`tab-btn ${
+                  activeTab === "delivered" ? "active" : ""
+                }`}
                 onClick={() => setActiveTab("delivered")}
               >
                 ✅ Delivered
-                <span className="tab-count">{deliveredOrders.length}</span>
+                <span className="tab-count">
+                  {deliveredOrders.length}
+                </span>
               </button>
             </div>
 
+            {/* ✅ Orders Section */}
             <div className="orders-section">
               {getOrdersForTab().length === 0 ? (
-                <p className="empty-section">No {activeTab} orders yet.</p>
+                <p className="empty-section">
+                  No {activeTab} orders yet.
+                </p>
               ) : (
                 <div className="admin-orders-list">
                   {getOrdersForTab().map(renderOrderCard)}
