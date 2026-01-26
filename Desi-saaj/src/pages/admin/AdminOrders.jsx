@@ -6,6 +6,9 @@ import toast from "react-hot-toast";
 
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+/* ✅ Backend Base URL (Fix Mixed Content) */
+const BASE_URL = API.replace("/api", "");
+
 export default function AdminOrders() {
   const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
 
@@ -60,7 +63,7 @@ export default function AdminOrders() {
         )
       );
 
-      toast.success("Order status updated ✅");
+      toast.success("Order status updated ");
     } catch (err) {
       console.error(err);
       toast.error("Failed to update status");
@@ -91,18 +94,18 @@ export default function AdminOrders() {
   };
 
   /* ============================
-     GROUP ORDERS BY STATUS
+     ✅ SAFE GROUP ORDERS BY STATUS
   ============================ */
   const placedOrders = orders.filter(
-    (o) => !o.status || o.status.toLowerCase() === "placed"
+    (o) => (o.status || "placed").toLowerCase() === "placed"
   );
 
   const processingOrders = orders.filter(
-    (o) => o.status && o.status.toLowerCase() === "processing"
+    (o) => (o.status || "").toLowerCase() === "processing"
   );
 
   const deliveredOrders = orders.filter(
-    (o) => o.status && o.status.toLowerCase() === "delivered"
+    (o) => (o.status || "").toLowerCase() === "delivered"
   );
 
   const getOrdersForTab = () => {
@@ -158,7 +161,7 @@ export default function AdminOrders() {
         <span>{new Date(order.createdAt).toLocaleDateString()}</span>
       </div>
 
-      {/* ✅ Status Dropdown */}
+      {/*  Status Dropdown */}
       <div className="order-row">
         <span>Status:</span>
         <span>
@@ -176,15 +179,21 @@ export default function AdminOrders() {
         </span>
       </div>
 
-      {/* ✅ Order Items */}
+      {/*  Order Items */}
       <div className="order-items">
         <h4>Items</h4>
+
         {(order.orderItems || []).map((item, index) => (
           <div key={index} className="order-item">
             <img
-              src={`http://localhost:5000${item.image || ""}`}
+              src={
+                item.image
+                  ? `${BASE_URL}${item.image}`
+                  : "/placeholder.png"
+              }
               alt={item.name || "Item"}
             />
+
             <div>
               <p>{item.name || "Unknown"}</p>
               <p>
@@ -195,8 +204,8 @@ export default function AdminOrders() {
         ))}
       </div>
 
-      {/* ✅ DELETE BUTTON ONLY FOR DELIVERED */}
-      {order.status?.toLowerCase() === "delivered" && (
+      {/*  DELETE BUTTON ONLY IF DELIVERED */}
+      {(order.status || "").toLowerCase() === "delivered" && (
         <button
           className="delete-order-btn"
           onClick={() => handleDeleteOrder(order._id)}
@@ -229,7 +238,7 @@ export default function AdminOrders() {
 
         {!loading && orders.length > 0 && (
           <>
-            {/* ✅ Tabs */}
+            {/*  Tabs */}
             <div className="orders-tabs">
               <button
                 className={`tab-btn ${
@@ -237,7 +246,7 @@ export default function AdminOrders() {
                 }`}
                 onClick={() => setActiveTab("placed")}
               >
-                📦 Placed
+                 Placed
                 <span className="tab-count">{placedOrders.length}</span>
               </button>
 
@@ -247,7 +256,7 @@ export default function AdminOrders() {
                 }`}
                 onClick={() => setActiveTab("processing")}
               >
-                ⚙️ Processing
+                 Processing
                 <span className="tab-count">
                   {processingOrders.length}
                 </span>
@@ -259,7 +268,7 @@ export default function AdminOrders() {
                 }`}
                 onClick={() => setActiveTab("delivered")}
               >
-                ✅ Delivered
+                 Delivered
                 <span className="tab-count">
                   {deliveredOrders.length}
                 </span>
