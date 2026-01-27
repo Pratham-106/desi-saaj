@@ -3,7 +3,7 @@ import axios from "axios";
 import "./../css/ContactPage.css";
 
 /* ✅ DEPLOYMENT SAFE API */
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ContactPage() {
   const [form, setForm] = useState({

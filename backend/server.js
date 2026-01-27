@@ -17,15 +17,17 @@ connectDB();
 
 const app = express();
 
-// Middleware
-// Middleware
+// Middleware - CORS Configuration for Development & Production
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://desi-saaj.vercel.app",
+  process.env.FRONTEND_URL || "https://desi-saaj.vercel.app",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:3000",
-      "https://desi-saaj.vercel.app", // ✅ your live frontend
-    ],
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

@@ -5,7 +5,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 /* ✅ DEPLOYMENT SAFE API */
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);

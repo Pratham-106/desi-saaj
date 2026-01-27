@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./../css/CartPage.css";
 
 /* ✅ DEPLOYMENT-SAFE API */
-const API = import.meta.env.VITE_API_URL;
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function CartPage() {
   const { cart, removeFromCart, updateQty } = useCart();
