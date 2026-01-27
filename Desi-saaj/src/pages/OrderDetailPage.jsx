@@ -8,7 +8,6 @@ import "./../css/OrderDetailPage.css";
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const BASE_URL = API.replace("/api", "");
 
-
 export default function OrderDetailPage() {
   const { id } = useParams();
   const { user } = useUser();
@@ -27,14 +26,11 @@ export default function OrderDetailPage() {
 
     const fetchOrder = async () => {
       try {
-        const { data } = await axios.get(
-          `${API}/orders/${id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
-          }
-        );
+        const { data } = await axios.get(`${API}/orders/${id}`, {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+          },
+        });
 
         if (!cancelled) {
           setOrder(data);
@@ -60,11 +56,13 @@ export default function OrderDetailPage() {
   if (loading) return <p>Loading order...</p>;
   if (!order) return <p>Order not found.</p>;
 
+  /* ✅ Safe Status Timeline */
   const statusSteps = ["Placed", "Processing", "Delivered"];
+
   const currentStatusIndex = Math.max(
     0,
     statusSteps.findIndex(
-      (s) => s.toLowerCase() === (order.status || "").toLowerCase()
+      (s) => s.toLowerCase() === (order.status || "Placed").toLowerCase()
     )
   );
 
@@ -73,17 +71,23 @@ export default function OrderDetailPage() {
       <h1>Order Details</h1>
 
       <div className="order-box">
-        <p><strong>Order ID:</strong> {order._id}</p>
+        <p>
+          <strong>Order ID:</strong> {order._id}
+        </p>
+
         <p>
           <strong>Date:</strong>{" "}
           {new Date(order.createdAt).toLocaleDateString()}
         </p>
+
         <p>
           <strong>Status:</strong>{" "}
-          <span className="status">{order.status}</span>
+          <span className="status">
+            {order.status || "Placed"}
+          </span>
         </p>
 
-        {/* STATUS TIMELINE */}
+        {/* ✅ STATUS TIMELINE */}
         <div className="status-timeline">
           {statusSteps.map((step, idx) => (
             <div
@@ -93,7 +97,9 @@ export default function OrderDetailPage() {
               <div className="dot">
                 {idx < currentStatusIndex ? "✓" : idx + 1}
               </div>
+
               <div className="label">{step}</div>
+
               {idx < statusSteps.length - 1 && (
                 <div className="connector" />
               )}
@@ -104,12 +110,14 @@ export default function OrderDetailPage() {
 
       <h2>Items</h2>
 
-      {order.orderItems.map((item, index) => (
+      {/* ✅ SAFE ORDER ITEMS MAP */}
+      {(order.orderItems || []).map((item, index) => (
         <div className="order-item" key={index}>
           <img
-            src={`${API.replace("/api", "")}${item.image}`}
-            alt={item.name}
+            src={item.image ? `${BASE_URL}${item.image}` : "/placeholder.png"}
+            alt={item.name || "Item"}
           />
+
           <div>
             <h4>{item.name}</h4>
             <p>Qty: {item.qty}</p>
@@ -119,7 +127,7 @@ export default function OrderDetailPage() {
       ))}
 
       <div className="order-summary">
-        <p>Delivery: ₹{order.deliveryCharge}</p>
+        <p>Delivery: ₹{order.deliveryCharge || 0}</p>
         <h3>Total: ₹{order.totalPrice}</h3>
       </div>
     </div>

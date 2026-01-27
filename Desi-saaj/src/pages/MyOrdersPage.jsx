@@ -4,7 +4,7 @@ import { useUser } from "../context/user/useUser";
 import { Link, useNavigate } from "react-router-dom";
 import "./../css/MyOrdersPage.css";
 
-/* ✅ DEPLOYMENT SAFE API */
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function MyOrdersPage() {
@@ -14,7 +14,9 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  /* 🔐 GUARD: must be logged in */
+  /* ============================
+     🔐 Protect Page (Login Required)
+  ============================ */
   useEffect(() => {
     if (!user || !user.token) {
       navigate("/login");
@@ -40,6 +42,9 @@ export default function MyOrdersPage() {
     fetchOrders();
   }, [user, navigate]);
 
+  /* ============================
+     UI Render
+  ============================ */
   return (
     <div className="my-orders-page">
       <h1>My Orders</h1>
@@ -71,8 +76,10 @@ export default function MyOrdersPage() {
 
               <div>
                 <strong>Status:</strong>{" "}
-                <span className={`status ${order.status.toLowerCase()}`}>
-                  {order.status}
+                <span
+                  className={`status ${(order.status || "Placed").toLowerCase()}`}
+                >
+                  {order.status || "Placed"}
                 </span>
               </div>
             </Link>
