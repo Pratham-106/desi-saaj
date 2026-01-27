@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useCart } from "../context/cart/useCart";
@@ -11,6 +11,7 @@ const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { addToCart } = useCart();
 
   const [product, setProduct] = useState(null);
@@ -60,6 +61,33 @@ export default function ProductDetailPage() {
     });
 
     toast.success("Item added to cart 🛒");
+  };
+
+  /* 🛍️ BUY NOW - Add to cart and go directly to checkout */
+  const handleBuyNow = () => {
+    if (isOutOfStock) {
+      toast.error("This product is currently out of stock");
+      return;
+    }
+
+    if (!selectedSize) {
+      toast.error("Please select a size first");
+      return;
+    }
+
+    addToCart({
+      _id: product._id,
+      name: product.name,
+      price: product.price,
+      images: product.images,
+      size: selectedSize,
+      deliveryCharge: product.deliveryCharge || 0,
+    });
+
+    toast.success("Item added! Redirecting to checkout 🛍️");
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 500);
   };
 
   const getStockLabel = () => {
@@ -141,14 +169,24 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* ADD TO CART */}
-          <button
-            className="add-to-cart-btn"
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-          >
-            {isOutOfStock ? "Out of Stock" : "🛒 Add to Cart"}
-          </button>
+          {/* ADD TO CART & BUY NOW */}
+          <div className="button-group">
+            <button
+              className="add-to-cart-btn"
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? "Out of Stock" : "🛒 Add to Cart"}
+            </button>
+
+            <button
+              className="buy-now-btn"
+              onClick={handleBuyNow}
+              disabled={isOutOfStock}
+            >
+              {isOutOfStock ? "Out of Stock" : "⚡ Buy Now"}
+            </button>
+          </div>
 
           {/* TRUST */}
           <div className="trust-info">

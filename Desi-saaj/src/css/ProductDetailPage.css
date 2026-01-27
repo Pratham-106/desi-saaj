@@ -110,9 +110,15 @@
     margin-bottom: 22px;
 }
 
-/* ADD TO CART */
+/* ADD TO CART & BUY NOW BUTTONS */
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
 .add-to-cart-btn {
-    width: 100%;
+    flex: 1;
     padding: 14px;
     font-size: 15px;
     font-weight: 600;
@@ -126,6 +132,31 @@
 
 .add-to-cart-btn:hover {
     background: linear-gradient(135deg, #78bf7c, #5faa63);
+}
+
+.buy-now-btn {
+    flex: 1;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 12px;
+    border: 2px solid #2f7d32;
+    background: white;
+    color: #2f7d32;
+    cursor: pointer;
+    transition: 0.25s;
+}
+
+.buy-now-btn:hover {
+    background: #f0f7f1;
+    border-color: #1b5e20;
+    color: #1b5e20;
+}
+
+.add-to-cart-btn:disabled,
+.buy-now-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* ================================
