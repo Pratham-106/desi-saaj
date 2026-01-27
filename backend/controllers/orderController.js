@@ -141,11 +141,13 @@ export const deleteOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Safe status check (prevents crash)
-    const status = order.status?.toLowerCase();
+    // ✅ Treat Delivered if either system says delivered
+    const statusDelivered =
+      order.status?.toLowerCase() === "delivered";
 
-    // ✅ Allow delete only if Delivered
-    if (status !== "delivered" && !order.isDelivered) {
+    const flagDelivered = order.isDelivered === true;
+
+    if (!statusDelivered && !flagDelivered) {
       return res.status(400).json({
         message: "Only delivered orders can be deleted",
       });
@@ -161,6 +163,47 @@ export const deleteOrder = async (req, res) => {
 
     res.status(500).json({
       message: "Server error deleting order",
+      error: error.message,
+    });
+  }
+};
+/* ============================
+   ✅ UPDATE ORDER STATUS (ADMIN)
+   PUT /api/orders/:id/status
+============================ */
+export const updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // ✅ Update status
+    order.status = status;
+
+    // ✅ If Delivered → update delivered flags
+    if (status.toLowerCase() === "delivered") {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+    } else {
+      order.isDelivered = false;
+      order.deliveredAt = null;
+    }
+
+    await order.save();
+
+    res.json({
+      message: "Order status updated ✅",
+      status: order.status,
+    });
+  } catch (error) {
+    console.error("Update order status error:", error);
+
+    res.status(500).json({
+      message: "Failed to update order status",
       error: error.message,
     });
   }
