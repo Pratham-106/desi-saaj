@@ -39,7 +39,7 @@ export default function CartPage() {
                 key={`${item._id}-${item.size}`}
               >
                 <img
-                  src={`${API.replace("/api", "")}${item.images[0]}`}
+                  src={`${API.replace("/api", "")}${(item.images && item.images[0]) || "/uploads/placeholder.jpg"}`}
                   alt={item.name}
                 />
 

@@ -23,7 +23,7 @@ export default function ProductDetailPage() {
       try {
         const res = await axios.get(`${API}/products/${id}`);
         setProduct(res.data);
-        setMainImage(res.data.images[0]);
+        setMainImage((res.data.images && res.data.images[0]) || "/uploads/placeholder.jpg");
       } catch (error) {
         console.error("Failed to fetch product", error);
       } finally {
@@ -90,7 +90,7 @@ export default function ProductDetailPage() {
           />
 
           <div className="thumbnail-row">
-            {product.images.map((img, index) => (
+            {(product.images || []).map((img, index) => (
               <img
                 key={index}
                 src={`${IMAGE_BASE}${img}`}

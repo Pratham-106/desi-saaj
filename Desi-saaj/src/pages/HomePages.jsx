@@ -87,7 +87,7 @@ export default function HomePages() {
                 key={product._id}
               >
                 <img
-                  src={`${API.replace("/api", "")}${product.images[0]}`}
+                  src={`${API.replace("/api", "")}${(product.images && product.images[0]) || "/uploads/placeholder.jpg"}`}
                   alt={product.name}
                 />
                 <div className="featured-info">

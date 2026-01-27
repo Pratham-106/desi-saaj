@@ -131,7 +131,7 @@ export default function AdminDashboard() {
                   <td>{order.user?.email || order.user?.name || '—'}</td>
                   <td>₹{order.totalPrice}</td>
                   <td>{order.paymentMethod}</td>
-                  <td><span className={`status ${order.status.toLowerCase()}`}>{order.status}</span></td>
+                  <td><span className={`status ${(order.status || "Placed").toLowerCase()}`}>{order.status || "Placed"}</span></td>
                   <td>{new Date(order.createdAt).toLocaleString()}</td>
                 </tr>
               ))}
