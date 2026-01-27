@@ -114,7 +114,7 @@ export default function OrderDetailPage() {
       {(order.orderItems || []).map((item, index) => (
         <div className="order-item" key={index}>
           <img
-            src={item.image ? `${BASE_URL}${item.image}` : "/placeholder.png"}
+            src={item.image ? `${BASE_URL}${item.image}` : "/no-img.svg"}
             alt={item.name || "Item"}
           />
 

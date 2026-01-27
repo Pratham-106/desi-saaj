@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <style>
+      .placeholder-bg { fill: #f0f0f0; }
+      .placeholder-text { font-size: 24px; fill: #999; font-family: Arial, sans-serif; text-anchor: middle; }
+      .placeholder-icon { fill: none; stroke: #ccc; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Background -->
+  <rect class="placeholder-bg" width="400" height="400"/>
+  
+  <!-- Image icon -->
+  <circle cx="200" cy="130" r="35" class="placeholder-icon"/>
+  <path d="M 80 280 L 150 200 L 220 260 L 280 180 L 320 240 L 320 320 L 80 320 Z" class="placeholder-icon"/>
+  
+  <!-- Text -->
+  <text x="200" y="360" class="placeholder-text">No Image</text>
+</svg>

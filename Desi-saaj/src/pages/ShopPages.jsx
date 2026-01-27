@@ -66,10 +66,10 @@ export default function ShopPages() {
                   src={
                     product.images?.[0]
                       ? `${BASE_URL}${product.images[0]}`
-                      : "/no-img.png"
+                      : "/no-img.svg"
                   }
                   alt={product.name}
-                  onError={(e) => (e.target.src = "/no-img.png")}
+                  onError={(e) => (e.target.src = "/no-img.svg")}
                 />
               </Link>
 

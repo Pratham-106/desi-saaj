@@ -1,21 +1,29 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/cart/useCart";
-import { useUser } from "../context/user/useUser";
 import "./../css/Checkout.css";
 
 /* ✅ DEPLOYMENT SAFE API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const BASE_URL = API.replace("/api", "");
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { cart } = useCart();
 
-  /* 🔐 GUARD: Redirect if cart is empty */
-  if (!cart.length) {
-    navigate("/cart");
-    return null;
-  }
+  /* ✅ Redirect if cart is empty (Safe) */
+  useEffect(() => {
+    if (!cart || cart.length === 0) {
+      navigate("/cart");
+    }
+  }, [cart, navigate]);
 
+  // ✅ Prevent render until cart exists
+  if (!cart || cart.length === 0) return null;
+
+  /* ============================
+     PRICE CALCULATIONS
+  ============================ */
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * (item.qty || 1),
     0
@@ -37,7 +45,7 @@ export default function CheckoutPage() {
       <h1>Checkout</h1>
 
       <div className="checkout-layout">
-        {/* ORDER SUMMARY */}
+        {/* ✅ ORDER SUMMARY */}
         <div className="checkout-summary">
           <h2>Order Summary</h2>
 
@@ -47,7 +55,11 @@ export default function CheckoutPage() {
               className="checkout-item"
             >
               <img
-                src={`${API.replace("/api", "")}${item.images[0]}`}
+                src={
+                  item.images?.length > 0
+                    ? `${BASE_URL}${item.images[0]}`
+                    : "/no-img.svg"
+                }
                 alt={item.name}
               />
 
@@ -57,7 +69,7 @@ export default function CheckoutPage() {
                   Size: {item.size} | Qty: {item.qty || 1}
                 </p>
                 <p>
-                  ₹{item.price} x {item.qty || 1}
+                  ₹{item.price} × {item.qty || 1}
                 </p>
               </div>
             </div>
@@ -65,6 +77,7 @@ export default function CheckoutPage() {
 
           <hr />
 
+          {/* ✅ TOTALS */}
           <div className="checkout-totals">
             <div>
               <span>Subtotal</span>
@@ -85,7 +98,7 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* ACTION */}
+        {/* ✅ ACTION */}
         <div className="checkout-actions">
           <button
             onClick={handleProceedToAddress}
