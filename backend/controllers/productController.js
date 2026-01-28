@@ -1,7 +1,122 @@
 import Product from "../models/productModel.js";
 
 /* ==============================
-   ADD PRODUCT (ADMIN)
+   ✅ ADD PRODUCT (ADMIN)
+   POST /api/products/add
+============================== */
+export const addProduct = async (req, res) => {
+  try {
+    const {
+      name,
+      price,
+      stockStatus,
+      category,
+      description,
+      deliveryCharge,
+      tags = [],
+    } = req.body;
+
+    const allowedStock = ["IN_STOCK", "LIMITED", "OUT_OF_STOCK"];
+
+    if (!allowedStock.includes(stockStatus)) {
+      return res.status(400).json({ message: "Invalid stock status" });
+    }
+
+    // ✅ Store only path (Deployment Safe)
+    const images =
+      req.files?.map((file) => `/uploads/${file.filename}`) || [];
+
+    const product = await Product.create({
+      name,
+      price,
+      stockStatus,
+      category,
+      description,
+      deliveryCharge,
+      images,
+      tags,
+    });
+
+    res.status(201).json({
+      message: "Product added successfully ✅",
+      product,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ GET ALL PRODUCTS
+   GET /api/products
+============================== */
+export const getProducts = async (req, res) => {
+  try {
+    const { category } = req.query;
+
+    const filter = category ? { category } : {};
+    const products = await Product.find(filter).sort({ createdAt: -1 });
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ GET TRENDING PRODUCTS
+   GET /api/products/trending
+============================== */
+export const getTrendingProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ tags: "TRENDING" })
+      .sort({ createdAt: -1 })
+      .limit(8);
+
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ GET SINGLE PRODUCT
+   GET /api/products/:id
+============================== */
+export const getProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ DELETE PRODUCT (ADMIN)
+   DELETE /api/products/:id
+============================== */
+export const deleteProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
+    await product.deleteOne();
+    res.json({ message: "Product deleted successfully ✅" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ UPDATE PRODUCT (ADMIN)
+   PUT /api/products/:id
 ============================== */
 export const updateProduct = async (req, res) => {
   try {
@@ -21,7 +136,7 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid stock status" });
     }
 
-    // ✅ Support new uploaded images
+    // ✅ Support optional new images upload
     const newImages =
       req.files?.map((file) => `/uploads/${file.filename}`) || null;
 
@@ -35,7 +150,6 @@ export const updateProduct = async (req, res) => {
       tags,
     };
 
-    // ✅ Only update images if uploaded
     if (newImages && newImages.length > 0) {
       updatedData.images = newImages;
     }
@@ -46,9 +160,8 @@ export const updateProduct = async (req, res) => {
       { new: true }
     );
 
-    if (!updatedProduct) {
+    if (!updatedProduct)
       return res.status(404).json({ message: "Product not found" });
-    }
 
     res.json({
       message: "Product updated successfully ✅",
@@ -60,141 +173,32 @@ export const updateProduct = async (req, res) => {
 };
 
 /* ==============================
-   GET TRENDING PRODUCTS
-============================== */
-export const getTrendingProducts = async (req, res) => {
-  try {
-    const products = await Product.find({
-      tags: "TRENDING",
-    })
-      .sort({ createdAt: -1 })
-      .limit(8); // 🔥 limit for homepage
-
-    res.json(products);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==============================
-   GET SINGLE PRODUCT
-============================== */
-export const getProductById = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res
-        .status(404)
-        .json({ message: "Product not found" });
-    }
-
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==============================
-   DELETE PRODUCT (ADMIN)
-============================== */
-export const deleteProduct = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res
-        .status(404)
-        .json({ message: "Product not found" });
-    }
-
-    await product.deleteOne();
-    res.json({ message: "Product deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==============================
-   UPDATE PRODUCT (ADMIN)
-============================== */
-export const updateProduct = async (req, res) => {
-  try {
-    const {
-      name,
-      price,
-      stockStatus,
-      category,
-      description,
-      deliveryCharge,
-      tags, // 🔥 NEW
-    } = req.body;
-
-    const allowedStock = ["IN_STOCK", "LIMITED", "OUT_OF_STOCK"];
-
-    if (stockStatus && !allowedStock.includes(stockStatus)) {
-      return res.status(400).json({ message: "Invalid stock status" });
-    }
-
-    const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        name,
-        price,
-        stockStatus,
-        category,
-        description,
-        deliveryCharge,
-        tags, // 🔥 UPDATE TAGS
-      },
-      { new: true }
-    );
-
-    if (!updatedProduct) {
-      return res
-        .status(404)
-        .json({ message: "Product not found" });
-    }
-
-    res.json({
-      message: "Product updated successfully",
-      product: updatedProduct,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==============================
-   ADD COMMENT / REVIEW (USER)
+   ✅ ADD COMMENT (USER)
 ============================== */
 export const addProductComment = async (req, res) => {
   try {
     const { comment } = req.body;
-    const productId = req.params.id;
 
     if (!comment || comment.trim() === "") {
       return res.status(400).json({ message: "Comment is required" });
     }
 
-    const product = await Product.findById(productId);
+    const product = await Product.findById(req.params.id);
 
-    if (!product) {
+    if (!product)
       return res.status(404).json({ message: "Product not found" });
-    }
 
-    const newReview = {
+    product.reviews.unshift({
       user: req.user._id,
       name: req.user.name,
       comment,
       likes: [],
-    };
+    });
 
-    product.reviews.unshift(newReview); // latest first
     await product.save();
 
     res.status(201).json({
-      message: "Comment added successfully",
+      message: "Comment added ✅",
       reviews: product.reviews,
     });
   } catch (error) {
@@ -203,7 +207,7 @@ export const addProductComment = async (req, res) => {
 };
 
 /* ==============================
-   LIKE / UNLIKE COMMENT (USER)
+   ✅ LIKE / UNLIKE COMMENT
 ============================== */
 export const toggleCommentLike = async (req, res) => {
   try {
@@ -211,25 +215,22 @@ export const toggleCommentLike = async (req, res) => {
 
     const product = await Product.findById(productId);
 
-    if (!product) {
+    if (!product)
       return res.status(404).json({ message: "Product not found" });
-    }
 
     const review = product.reviews.id(reviewId);
 
-    if (!review) {
+    if (!review)
       return res.status(404).json({ message: "Comment not found" });
-    }
 
     const userId = req.user._id.toString();
+
     const alreadyLiked = review.likes
       .map((id) => id.toString())
       .includes(userId);
 
     if (alreadyLiked) {
-      review.likes = review.likes.filter(
-        (id) => id.toString() !== userId
-      );
+      review.likes = review.likes.filter((id) => id.toString() !== userId);
     } else {
       review.likes.push(req.user._id);
     }
@@ -237,8 +238,8 @@ export const toggleCommentLike = async (req, res) => {
     await product.save();
 
     res.json({
-      message: alreadyLiked ? "Like removed" : "Comment liked",
-      likesCount: review.likes.length,
+      message: alreadyLiked ? "Like removed ✅" : "Comment liked ❤️",
+      reviews: product.reviews,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
