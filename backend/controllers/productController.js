@@ -3,7 +3,7 @@ import Product from "../models/productModel.js";
 /* ==============================
    ADD PRODUCT (ADMIN)
 ============================== */
-export const addProduct = async (req, res) => {
+export const updateProduct = async (req, res) => {
   try {
     const {
       name,
@@ -12,52 +12,48 @@ export const addProduct = async (req, res) => {
       category,
       description,
       deliveryCharge,
-      tags = [], // 🔥 NEW
+      tags,
     } = req.body;
 
     const allowedStock = ["IN_STOCK", "LIMITED", "OUT_OF_STOCK"];
 
-    if (!allowedStock.includes(stockStatus)) {
+    if (stockStatus && !allowedStock.includes(stockStatus)) {
       return res.status(400).json({ message: "Invalid stock status" });
     }
 
-    const images =
-      req.files?.map((file) => `/uploads/${file.filename}`) || [];
+    // ✅ Support new uploaded images
+    const newImages =
+      req.files?.map((file) => `/uploads/${file.filename}`) || null;
 
-    const product = await Product.create({
+    const updatedData = {
       name,
       price,
       stockStatus,
       category,
       description,
       deliveryCharge,
-      images,
-      tags, // 🔥 SAVE TAGS
+      tags,
+    };
+
+    // ✅ Only update images if uploaded
+    if (newImages && newImages.length > 0) {
+      updatedData.images = newImages;
+    }
+
+    const updatedProduct = await Product.findByIdAndUpdate(
+      req.params.id,
+      updatedData,
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({
+      message: "Product updated successfully ✅",
+      product: updatedProduct,
     });
-
-    res.status(201).json({
-      message: "Product added successfully",
-      product,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/* ==============================
-   GET ALL PRODUCTS
-============================== */
-export const getProducts = async (req, res) => {
-  try {
-    const { category } = req.query;
-
-    const filter = category ? { category } : {};
-
-    const products = await Product.find(filter).sort({
-      createdAt: -1,
-    });
-
-    res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

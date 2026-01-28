@@ -5,9 +5,8 @@ import "./../../css/AdminProducts.css";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
-// ✅ Base URL for images (Render backend, not localhost)
 const BASE_URL = API.replace("/api", "");
 
 export default function AdminProducts() {
@@ -25,7 +24,7 @@ export default function AdminProducts() {
       const res = await axios.get(`${API}/products`);
       setProducts(res.data || []);
     } catch (error) {
-      console.error("Failed to fetch products", error);
+      console.error("Fetch products error:", error);
       toast.error("Failed to fetch products");
     } finally {
       setLoading(false);
@@ -36,7 +35,7 @@ export default function AdminProducts() {
      DELETE PRODUCT (ADMIN)
   ============================ */
   const deleteProduct = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Delete this product permanently?")) return;
 
     try {
       await axios.delete(`${API}/products/${id}`, {
@@ -46,10 +45,10 @@ export default function AdminProducts() {
       });
 
       setProducts((prev) => prev.filter((p) => p._id !== id));
-      toast.success("Product deleted successfully ✅");
+      toast.success("Product deleted ✅");
     } catch (error) {
-      console.error("Failed to delete product", error);
-      toast.error(error.response?.data?.message || "Failed to delete product");
+      console.error("Delete product error:", error);
+      toast.error("Failed to delete product");
     }
   };
 
@@ -104,7 +103,7 @@ export default function AdminProducts() {
                 ) : (
                   products.map((product) => (
                     <tr key={product._id}>
-                      {/* ✅ IMAGE FIXED */}
+                      {/* ✅ Image Safe */}
                       <td>
                         <img
                           src={

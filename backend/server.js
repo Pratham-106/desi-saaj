@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
+import { fileURLToPath } from "url";
+
 import connectDB from "./config/db.js";
 
 import productRoutes from "./routes/productRoutes.js";
@@ -12,17 +14,20 @@ import contactRoutes from "./routes/contactRoutes.js";
 
 dotenv.config();
 
-// CONNECT DATABASE FIRST
+// ✅ Connect Database
 connectDB();
 
 const app = express();
 
-// Middleware - CORS Configuration for Development & Production
+/* ============================
+   ✅ Middleware
+============================ */
+
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
   "https://desi-saaj.vercel.app",
-  process.env.FRONTEND_URL || "https://desi-saaj.vercel.app",
+  process.env.FRONTEND_URL,
 ].filter(Boolean);
 
 app.use(
@@ -37,26 +42,38 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+/* ============================
+   ✅ Serve Uploads Folder (Render Safe)
+============================ */
 
-// Upload folder (make accessible)
-const __dirname = path.resolve();
+// ✅ ESM Fix for __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ✅ Public Uploads Access
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+/* ============================
+   ✅ API Routes
+============================ */
 app.use("/api/products", productRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/contact", contactRoutes);
 
-// Root test route
+/* ============================
+   Root Test Route
+============================ */
 app.get("/", (req, res) => {
-  res.send("Desi Saaj API is running...");
+  res.send("✅ Desi Saaj API is running...");
 });
 
-// Start server
+/* ============================
+   Start Server
+============================ */
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server started on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
