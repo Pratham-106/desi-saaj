@@ -4,9 +4,8 @@ import AdminLayout from "../../components/AdminLayout";
 import "./../../css/AdminOrders.css";
 import toast from "react-hot-toast";
 
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
-/* ✅ Backend Base URL (Fix Mixed Content) */
 const BASE_URL = API.replace("/api", "");
 
 export default function AdminOrders() {
@@ -14,7 +13,6 @@ export default function AdminOrders() {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("placed");
 
   /* ============================
@@ -30,12 +28,11 @@ export default function AdminOrders() {
         });
 
         setOrders(data || []);
-        setLoading(false);
       } catch (err) {
         console.error(err);
-        setError("Unauthorized or failed to fetch orders");
-        setLoading(false);
         toast.error("Failed to fetch orders");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -63,7 +60,7 @@ export default function AdminOrders() {
         )
       );
 
-      toast.success("Order status updated ");
+      toast.success("Order status updated ✅");
     } catch (err) {
       console.error(err);
       toast.error("Failed to update status");
@@ -83,21 +80,21 @@ export default function AdminOrders() {
         },
       });
 
-      toast.success("Order deleted successfully ✅");
+      toast.success("Order deleted ✅");
 
-      // ✅ Remove order instantly from UI
+      // ✅ Remove instantly
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
     } catch (err) {
       console.error(err);
-      toast.error(err.response?.data?.message || "Failed to delete order");
+      toast.error(err.response?.data?.message || "Delete failed");
     }
   };
 
   /* ============================
-     ✅ SAFE GROUP ORDERS BY STATUS
+     ✅ SAFE GROUPING BY STATUS
   ============================ */
   const placedOrders = orders.filter(
-    (o) => (o.status || "placed").toLowerCase() === "placed"
+    (o) => (o.status || "Placed").toLowerCase() === "placed"
   );
 
   const processingOrders = orders.filter(
@@ -109,182 +106,109 @@ export default function AdminOrders() {
   );
 
   const getOrdersForTab = () => {
-    switch (activeTab) {
-      case "placed":
-        return placedOrders;
-      case "processing":
-        return processingOrders;
-      case "delivered":
-        return deliveredOrders;
-      default:
-        return [];
-    }
+    if (activeTab === "placed") return placedOrders;
+    if (activeTab === "processing") return processingOrders;
+    if (activeTab === "delivered") return deliveredOrders;
+    return [];
   };
 
   /* ============================
      RENDER ORDER CARD
   ============================ */
-  const renderOrderCard = (order) => (
-    <div key={order._id} className="admin-order-card">
-      <div className="order-row">
-        <span>Order ID:</span>
-        <span className="order-id">{order._id.slice(-8)}</span>
-      </div>
+  const renderOrderCard = (order) => {
+    const status = (order.status || "Placed").toLowerCase();
 
-      <div className="order-row">
-        <span>User:</span>
-        <span>{order.user?.email}</span>
-      </div>
+    return (
+      <div key={order._id} className="admin-order-card">
+        <h3>Order #{order._id.slice(-8)}</h3>
 
-      <div className="order-row">
-        <span>Phone:</span>
-        <span>{order.shippingAddress?.phone || "N/A"}</span>
-      </div>
+        <p>
+          <strong>User:</strong> {order.user?.email}
+        </p>
 
-      <div className="order-row">
-        <span>Address:</span>
-        <span>{order.shippingAddress?.address || "N/A"}</span>
-      </div>
+        <p>
+          <strong>Total:</strong> ₹{order.totalPrice}
+        </p>
 
-      <div className="order-row">
-        <span>Payment:</span>
-        <span>{order.paymentMethod || "N/A"}</span>
-      </div>
-
-      <div className="order-row">
-        <span>Total:</span>
-        <span className="order-total">₹{order.totalPrice || 0}</span>
-      </div>
-
-      <div className="order-row">
-        <span>Date:</span>
-        <span>{new Date(order.createdAt).toLocaleDateString()}</span>
-      </div>
-
-      {/*  Status Dropdown */}
-      <div className="order-row">
-        <span>Status:</span>
-        <span>
-          <select
-            className="status-select"
-            value={order.status || "Placed"}
-            onChange={(e) =>
-              handleStatusChange(order._id, e.target.value)
-            }
-          >
-            <option value="Placed">Placed</option>
-            <option value="Processing">Processing</option>
-            <option value="Delivered">Delivered</option>
-          </select>
-        </span>
-      </div>
-
-      {/*  Order Items */}
-      <div className="order-items">
-        <h4>Items</h4>
-
-        {(order.orderItems || []).map((item, index) => (
-          <div key={index} className="order-item">
-            <img
-              src={
-                item.image
-                  ? `${BASE_URL}${item.image}`
-                  : "/placeholder.png"
-              }
-              alt={item.name || "Item"}
-            />
-
-            <div>
-              <p>{item.name || "Unknown"}</p>
-              <p>
-                ₹{item.price || 0} × {item.qty || 0}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/*  DELETE BUTTON ONLY IF DELIVERED */}
-      {(order.status || "").toLowerCase() === "delivered" && (
-        <button
-          className="delete-order-btn"
-          onClick={() => handleDeleteOrder(order._id)}
+        {/* ✅ Status Dropdown */}
+        <select
+          value={order.status || "Placed"}
+          onChange={(e) =>
+            handleStatusChange(order._id, e.target.value)
+          }
+          className="status-select"
         >
-          🗑️ Delete Delivered Order
-        </button>
-      )}
-    </div>
-  );
+          <option value="Placed">Placed</option>
+          <option value="Processing">Processing</option>
+          <option value="Delivered">Delivered</option>
+        </select>
 
-  /* ============================
-     MAIN RETURN UI
-  ============================ */
+        {/* ✅ Items */}
+        <div className="order-items">
+          {(order.orderItems || []).map((item, idx) => (
+            <div key={idx} className="order-item">
+              <img
+                src={
+                  item.image
+                    ? `${BASE_URL}${item.image}`
+                    : "/placeholder.png"
+                }
+                alt={item.name}
+              />
+
+              <div>
+                <p>{item.name}</p>
+                <p>
+                  ₹{item.price} × {item.qty}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ✅ Delete Button Only If Delivered */}
+        {status === "delivered" && (
+          <button
+            className="delete-order-btn"
+            onClick={() => handleDeleteOrder(order._id)}
+          >
+            🗑 Delete Delivered Order
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <AdminLayout>
       <div className="admin-orders-page">
-        <div className="orders-header">
-          <h1>Orders Management</h1>
-          <p>Track and manage all customer orders</p>
-        </div>
+        <h1>Orders Management</h1>
 
-        {loading && <p className="loading-text">Loading orders...</p>}
-        {error && <p className="error-text">{error}</p>}
-
-        {!loading && orders.length === 0 && (
-          <div className="no-orders">
-            <p>No orders found yet.</p>
-          </div>
-        )}
-
-        {!loading && orders.length > 0 && (
+        {loading ? (
+          <p>Loading orders...</p>
+        ) : (
           <>
-            {/*  Tabs */}
+            {/* ✅ Tabs */}
             <div className="orders-tabs">
-              <button
-                className={`tab-btn ${
-                  activeTab === "placed" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("placed")}
-              >
-                 Placed
-                <span className="tab-count">{placedOrders.length}</span>
+              <button onClick={() => setActiveTab("placed")}>
+                📦 Placed ({placedOrders.length})
               </button>
 
-              <button
-                className={`tab-btn ${
-                  activeTab === "processing" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("processing")}
-              >
-                 Processing
-                <span className="tab-count">
-                  {processingOrders.length}
-                </span>
+              <button onClick={() => setActiveTab("processing")}>
+                ⚙️ Processing ({processingOrders.length})
               </button>
 
-              <button
-                className={`tab-btn ${
-                  activeTab === "delivered" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("delivered")}
-              >
-                 Delivered
-                <span className="tab-count">
-                  {deliveredOrders.length}
-                </span>
+              <button onClick={() => setActiveTab("delivered")}>
+                ✅ Delivered ({deliveredOrders.length})
               </button>
             </div>
 
-            {/* ✅ Orders Section */}
-            <div className="orders-section">
+            {/* ✅ Orders List */}
+            <div className="admin-orders-list">
               {getOrdersForTab().length === 0 ? (
-                <p className="empty-section">
-                  No {activeTab} orders yet.
-                </p>
+                <p>No orders in this tab.</p>
               ) : (
-                <div className="admin-orders-list">
-                  {getOrdersForTab().map(renderOrderCard)}
-                </div>
+                getOrdersForTab().map(renderOrderCard)
               )}
             </div>
           </>

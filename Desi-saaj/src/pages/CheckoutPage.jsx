@@ -11,14 +11,14 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { cart } = useCart();
 
-  /* ✅ Redirect if cart is empty (Safe) */
+  /* ✅ Redirect if cart is empty (Safe React Way) */
   useEffect(() => {
     if (!cart || cart.length === 0) {
       navigate("/cart");
     }
   }, [cart, navigate]);
 
-  // ✅ Prevent render until cart exists
+  // ✅ Prevent UI render until cart exists
   if (!cart || cart.length === 0) return null;
 
   /* ============================
@@ -58,16 +58,18 @@ export default function CheckoutPage() {
                 src={
                   item.images?.length > 0
                     ? `${BASE_URL}${item.images[0]}`
-                    : "/no-img.svg"
+                    : "/placeholder.png"
                 }
                 alt={item.name}
               />
 
               <div>
                 <p>{item.name}</p>
+
                 <p>
                   Size: {item.size} | Qty: {item.qty || 1}
                 </p>
+
                 <p>
                   ₹{item.price} × {item.qty || 1}
                 </p>
@@ -87,7 +89,9 @@ export default function CheckoutPage() {
             <div>
               <span>Delivery</span>
               <span>
-                {deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}
+                {deliveryCharge === 0
+                  ? "Free"
+                  : `₹${deliveryCharge}`}
               </span>
             </div>
 

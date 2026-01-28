@@ -4,7 +4,7 @@ import axios from "axios";
 import { useUser } from "../context/user/useUser";
 import "./../css/OrderDetailPage.css";
 
-/* ✅ DEPLOYMENT SAFE API */
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const BASE_URL = API.replace("/api", "");
 
@@ -16,6 +16,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  /* ============================
+     FETCH ORDER DETAILS
+  ============================ */
   useEffect(() => {
     if (!user || !user.token) {
       navigate("/login");
@@ -35,8 +38,8 @@ export default function OrderDetailPage() {
         if (!cancelled) {
           setOrder(data);
         }
-      } catch (err) {
-        console.error("Order fetch error:", err);
+      } catch (error) {
+        console.error("Order fetch error:", error);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -44,25 +47,25 @@ export default function OrderDetailPage() {
 
     fetchOrder();
 
-    /* 🔁 Poll for updates every 8 seconds */
-    const interval = setInterval(fetchOrder, 8000);
-
     return () => {
       cancelled = true;
-      clearInterval(interval);
     };
   }, [id, user, navigate]);
 
   if (loading) return <p>Loading order...</p>;
   if (!order) return <p>Order not found.</p>;
 
-  /* ✅ Safe Status Timeline */
+  /* ============================
+     ✅ STATUS TIMELINE SAFE
+  ============================ */
   const statusSteps = ["Placed", "Processing", "Delivered"];
 
   const currentStatusIndex = Math.max(
     0,
     statusSteps.findIndex(
-      (s) => s.toLowerCase() === (order.status || "Placed").toLowerCase()
+      (s) =>
+        s.toLowerCase() ===
+        (order.status || "Placed").toLowerCase()
     )
   );
 
@@ -70,6 +73,7 @@ export default function OrderDetailPage() {
     <div className="order-detail">
       <h1>Order Details</h1>
 
+      {/* ✅ Order Info */}
       <div className="order-box">
         <p>
           <strong>Order ID:</strong> {order._id}
@@ -87,7 +91,7 @@ export default function OrderDetailPage() {
           </span>
         </p>
 
-        {/* ✅ STATUS TIMELINE */}
+        {/* ✅ Timeline */}
         <div className="status-timeline">
           {statusSteps.map((step, idx) => (
             <div
@@ -97,9 +101,7 @@ export default function OrderDetailPage() {
               <div className="dot">
                 {idx < currentStatusIndex ? "✓" : idx + 1}
               </div>
-
               <div className="label">{step}</div>
-
               {idx < statusSteps.length - 1 && (
                 <div className="connector" />
               )}
@@ -108,14 +110,18 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
+      {/* ✅ Items */}
       <h2>Items</h2>
 
-      {/* ✅ SAFE ORDER ITEMS MAP */}
       {(order.orderItems || []).map((item, index) => (
-        <div className="order-item" key={index}>
+        <div key={index} className="order-item">
           <img
-            src={item.image ? `${BASE_URL}${item.image}` : "/no-img.svg"}
-            alt={item.name || "Item"}
+            src={
+              item.image
+                ? `${BASE_URL}${item.image}`
+                : "/placeholder.png"
+            }
+            alt={item.name}
           />
 
           <div>
@@ -126,6 +132,7 @@ export default function OrderDetailPage() {
         </div>
       ))}
 
+      {/* ✅ Summary */}
       <div className="order-summary">
         <p>Delivery: ₹{order.deliveryCharge || 0}</p>
         <h3>Total: ₹{order.totalPrice}</h3>
