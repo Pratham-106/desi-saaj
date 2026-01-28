@@ -17,7 +17,7 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true);
 
   /* ============================
-     FETCH ORDER DETAILS
+     ✅ FETCH ORDER WITH AUTO REFRESH
   ============================ */
   useEffect(() => {
     if (!user || !user.token) {
@@ -37,18 +37,22 @@ export default function OrderDetailPage() {
 
         if (!cancelled) {
           setOrder(data);
+          setLoading(false);
         }
       } catch (error) {
         console.error("Order fetch error:", error);
-      } finally {
-        if (!cancelled) setLoading(false);
       }
     };
 
+    // ✅ Initial Fetch
     fetchOrder();
+
+    // ✅ Auto Refresh every 5 seconds
+    const interval = setInterval(fetchOrder, 5000);
 
     return () => {
       cancelled = true;
+      clearInterval(interval);
     };
   }, [id, user, navigate]);
 
@@ -96,12 +100,15 @@ export default function OrderDetailPage() {
           {statusSteps.map((step, idx) => (
             <div
               key={step}
-              className={`step ${idx <= currentStatusIndex ? "active" : ""}`}
+              className={`step ${
+                idx <= currentStatusIndex ? "active" : ""
+              }`}
             >
               <div className="dot">
                 {idx < currentStatusIndex ? "✓" : idx + 1}
               </div>
               <div className="label">{step}</div>
+
               {idx < statusSteps.length - 1 && (
                 <div className="connector" />
               )}
