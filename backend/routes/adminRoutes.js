@@ -9,19 +9,13 @@ import { protect, admin } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/* ============================
-   ADMIN LOGIN
-============================ */
+/* ✅ Admin Login */
 router.post("/login", adminLogin);
 
-/* ============================
-   USERS MANAGEMENT (ADMIN ONLY)
-============================ */
+/* ✅ Get All Users */
+router.get("/users", protect, admin, getAllUsers);
 
-// ✅ GET ALL USERS
-router.get("/", protect, admin, getAllUsers);
-
-// ✅ DELETE USER
-router.delete("/:id", protect, admin, deleteUser);
+/* ✅ Delete User */
+router.delete("/users/:id", protect, admin, deleteUser);
 
 export default router;

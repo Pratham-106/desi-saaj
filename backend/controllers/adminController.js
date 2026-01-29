@@ -54,3 +54,36 @@ export const adminLogin = async (req, res) => {
     });
   }
 };
+
+
+/* ============================
+   ✅ DELETE USER (ADMIN)
+   DELETE /api/admin/users/:id
+============================ */
+export const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // ✅ Prevent deleting admin account
+    if (user.isAdmin) {
+      return res.status(400).json({
+        message: "Cannot delete admin user",
+      });
+    }
+
+    await user.deleteOne();
+
+    res.json({
+      message: "User deleted successfully ✅",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to delete user",
+      error: error.message,
+    });
+  }
+};
