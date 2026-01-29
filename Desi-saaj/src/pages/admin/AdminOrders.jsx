@@ -4,7 +4,6 @@ import AdminLayout from "../../components/AdminLayout";
 import toast from "react-hot-toast";
 import "./../../css/AdminOrders.css";
 
-/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 const BASE_URL = API.replace("/api", "");
 
@@ -15,20 +14,15 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("PLACED");
 
-  /* ============================
-     ✅ FETCH ALL ORDERS
-  ============================ */
+  /* ✅ FETCH */
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get(`${API}/orders/admin/all`, {
-        headers: {
-          Authorization: `Bearer ${adminInfo.token}`,
-        },
+        headers: { Authorization: `Bearer ${adminInfo.token}` },
       });
 
       setOrders(data || []);
-    } catch (error) {
-      console.error(error);
+    } catch {
       toast.error("Failed to fetch orders");
     } finally {
       setLoading(false);
@@ -39,69 +33,56 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
-  /* ============================
-     ✅ UPDATE ORDER STATUS
-  ============================ */
+  /* ✅ UPDATE STATUS */
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const { data } = await axios.put(
         `${API}/orders/${orderId}/status`,
         { status: newStatus },
         {
-          headers: {
-            Authorization: `Bearer ${adminInfo.token}`,
-          },
+          headers: { Authorization: `Bearer ${adminInfo.token}` },
         }
       );
 
-      toast.success("Status updated ✅");
+      toast.success("Status Updated ✅");
 
-      // ✅ Update UI instantly
+      // ✅ Replace full updated order
       setOrders((prev) =>
-        prev.map((o) =>
-          o._id === orderId
-            ? { ...o, orderStatus: data.orderStatus }
-            : o
-        )
+        prev.map((o) => (o._id === orderId ? data.order : o))
       );
-    } catch (error) {
-      console.error(error);
+
+      // ✅ Switch tab automatically
+      setActiveTab(newStatus);
+    } catch {
       toast.error("Failed to update status");
     }
   };
 
-  /* ============================
-     ✅ DELETE ORDER (ONLY DELIVERED)
-  ============================ */
+  /* ✅ DELETE */
   const handleDeleteOrder = async (orderId) => {
-    if (!window.confirm("Delete this delivered order permanently?")) return;
+    if (!window.confirm("Delete delivered order permanently?")) return;
 
     try {
       await axios.delete(`${API}/orders/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${adminInfo.token}`,
-        },
+        headers: { Authorization: `Bearer ${adminInfo.token}` },
       });
 
       toast.success("Order deleted ✅");
-
-      // ✅ Remove instantly
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Delete failed");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Delete failed");
     }
   };
 
-  /* ============================
-     ✅ FILTER BY STATUS
-  ============================ */
-  const placedOrders = orders.filter((o) => o.orderStatus === "PLACED");
+  /* ✅ NORMALIZED FILTERS */
+  const placedOrders = orders.filter(
+    (o) => (o.orderStatus || "").toUpperCase() === "PLACED"
+  );
   const processingOrders = orders.filter(
-    (o) => o.orderStatus === "PROCESSING"
+    (o) => (o.orderStatus || "").toUpperCase() === "PROCESSING"
   );
   const deliveredOrders = orders.filter(
-    (o) => o.orderStatus === "DELIVERED"
+    (o) => (o.orderStatus || "").toUpperCase() === "DELIVERED"
   );
 
   const ordersForTab = () => {
@@ -111,76 +92,13 @@ export default function AdminOrders() {
     return [];
   };
 
-  /* ============================
-     ✅ RENDER ORDER CARD
-  ============================ */
-  const renderOrder = (order) => (
-    <div key={order._id} className="admin-order-card">
-      <h3>Order #{order._id.slice(-8)}</h3>
-
-      <p>
-        <strong>User:</strong> {order.user?.email}
-      </p>
-
-      <p>
-        <strong>Total:</strong> ₹{order.totalPrice}
-      </p>
-
-      {/* ✅ STATUS DROPDOWN */}
-      <select
-        className="status-select"
-        value={order.orderStatus}
-        onChange={(e) =>
-          handleStatusChange(order._id, e.target.value)
-        }
-      >
-        <option value="PLACED">Placed</option>
-        <option value="PROCESSING">Processing</option>
-        <option value="DELIVERED">Delivered</option>
-      </select>
-
-      {/* ✅ ITEMS */}
-      <div className="order-items">
-        {(order.orderItems || []).map((item, idx) => (
-          <div key={idx} className="order-item">
-            <img
-              src={
-                item.image
-                  ? `${BASE_URL}${item.image}`
-                  : "/placeholder.png"
-              }
-              alt={item.name}
-            />
-
-            <div>
-              <p>{item.name}</p>
-              <p>
-                ₹{item.price} × {item.qty}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* ✅ DELETE ONLY DELIVERED */}
-      {order.orderStatus === "DELIVERED" && (
-        <button
-          className="delete-order-btn"
-          onClick={() => handleDeleteOrder(order._id)}
-        >
-          🗑 Delete Delivered Order
-        </button>
-      )}
-    </div>
-  );
-
   return (
     <AdminLayout>
       <div className="admin-orders-page">
         <h1>Orders Management</h1>
 
         {loading ? (
-          <p>Loading orders...</p>
+          <p>Loading...</p>
         ) : (
           <>
             {/* ✅ Tabs */}
@@ -203,7 +121,36 @@ export default function AdminOrders() {
               {ordersForTab().length === 0 ? (
                 <p>No orders here.</p>
               ) : (
-                ordersForTab().map(renderOrder)
+                ordersForTab().map((order) => (
+                  <div key={order._id} className="admin-order-card">
+                    <h3>Order #{order._id.slice(-8)}</h3>
+
+                    <p>User: {order.user?.email}</p>
+                    <p>Total: ₹{order.totalPrice}</p>
+
+                    {/* ✅ Dropdown */}
+                    <select
+                      value={(order.orderStatus || "PLACED").toUpperCase()}
+                      onChange={(e) =>
+                        handleStatusChange(order._id, e.target.value)
+                      }
+                    >
+                      <option value="PLACED">Placed</option>
+                      <option value="PROCESSING">Processing</option>
+                      <option value="DELIVERED">Delivered</option>
+                    </select>
+
+                    {/* ✅ Delete Button */}
+                    {(order.orderStatus || "").toUpperCase() === "DELIVERED" && (
+                      <button
+                        className="delete-order-btn"
+                        onClick={() => handleDeleteOrder(order._id)}
+                      >
+                        🗑 Delete Delivered Order
+                      </button>
+                    )}
+                  </div>
+                ))
               )}
             </div>
           </>

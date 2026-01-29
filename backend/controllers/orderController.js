@@ -1,8 +1,7 @@
 import Order from "../models/orderModel.js";
 
 /* ============================
-   CREATE NEW ORDER
-   POST /api/orders
+   ✅ CREATE ORDER
 ============================ */
 export const createOrder = async (req, res) => {
   try {
@@ -11,8 +10,7 @@ export const createOrder = async (req, res) => {
       shippingAddress,
       paymentMethod,
       itemsPrice,
-      shippingPrice,
-      taxPrice,
+      deliveryCharge,
       totalPrice,
     } = req.body;
 
@@ -26,12 +24,10 @@ export const createOrder = async (req, res) => {
       shippingAddress,
       paymentMethod,
       itemsPrice,
-      shippingPrice,
-      taxPrice,
+      deliveryCharge,
       totalPrice,
 
-      // ✅ Default status system
-      status: "Placed",
+      orderStatus: "PLACED",
       isDelivered: false,
     });
 
@@ -46,8 +42,7 @@ export const createOrder = async (req, res) => {
 };
 
 /* ============================
-   GET USER ORDERS
-   GET /api/orders/my-orders
+   ✅ GET MY ORDERS
 ============================ */
 export const getMyOrders = async (req, res) => {
   try {
@@ -65,8 +60,7 @@ export const getMyOrders = async (req, res) => {
 };
 
 /* ============================
-   GET ALL ORDERS (ADMIN)
-   GET /api/orders/admin/all
+   ✅ ADMIN: GET ALL ORDERS
 ============================ */
 export const getAllOrders = async (req, res) => {
   try {
@@ -84,8 +78,7 @@ export const getAllOrders = async (req, res) => {
 };
 
 /* ============================
-   GET ORDER BY ID
-   GET /api/orders/:id
+   ✅ GET ORDER BY ID
 ============================ */
 export const getOrderById = async (req, res) => {
   try {
@@ -94,9 +87,7 @@ export const getOrderById = async (req, res) => {
       "name email"
     );
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
     res.json(order);
   } catch (error) {
@@ -108,27 +99,29 @@ export const getOrderById = async (req, res) => {
 };
 
 /* ============================
-   ✅ UPDATE ORDER STATUS (ADMIN)
-   PUT /api/orders/:id/status
+   ✅ ADMIN: UPDATE ORDER STATUS
 ============================ */
 export const updateOrderStatus = async (req, res) => {
   try {
     let { status } = req.body;
-    status = status || "Placed";
+
+    status = (status || "PLACED").toUpperCase();
+
+    const allowed = ["PLACED", "PROCESSING", "DELIVERED"];
+
+    if (!allowed.includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
 
     const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // ✅ Normalize status properly
-    order.status =
-      status.charAt(0).toUpperCase() +
-      status.slice(1).toLowerCase();
+    // ✅ Save properly
+    order.orderStatus = status;
 
-    // ✅ Sync Delivered Flags
-    if ((status || "").toLowerCase() === "delivered") {
+    // ✅ Sync delivery flags
+    if (status === "DELIVERED") {
       order.isDelivered = true;
       order.deliveredAt = Date.now();
     } else {
@@ -140,7 +133,7 @@ export const updateOrderStatus = async (req, res) => {
 
     res.json({
       message: "Order status updated ✅",
-      status: order.status,
+      order, // ✅ Return FULL order
     });
   } catch (error) {
     res.status(500).json({
@@ -151,49 +144,15 @@ export const updateOrderStatus = async (req, res) => {
 };
 
 /* ============================
-   MARK ORDER AS DELIVERED (ADMIN)
-   PUT /api/orders/:id/deliver
-============================ */
-export const markOrderDelivered = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    order.status = "Delivered";
-    order.isDelivered = true;
-    order.deliveredAt = Date.now();
-
-    const updatedOrder = await order.save();
-
-    res.json({
-      message: "Order marked as delivered ✅",
-      updatedOrder,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to update delivery status",
-      error: error.message,
-    });
-  }
-};
-
-/* ============================
-   ✅ DELETE ORDER (ADMIN ONLY)
-   DELETE /api/orders/:id
+   ✅ ADMIN: DELETE DELIVERED ORDER
 ============================ */
 export const deleteOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
 
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
+    if (!order) return res.status(404).json({ message: "Order not found" });
 
-    // ✅ Only allow delete if status is Delivered
-    if ((order.status || "").toLowerCase() !== "delivered") {
+    if ((order.orderStatus || "").toUpperCase() !== "DELIVERED") {
       return res.status(400).json({
         message: "Only delivered orders can be deleted",
       });
@@ -201,12 +160,8 @@ export const deleteOrder = async (req, res) => {
 
     await order.deleteOne();
 
-    res.json({
-      message: "Order deleted successfully ✅",
-    });
+    res.json({ message: "Order deleted successfully ✅" });
   } catch (error) {
-    console.error("Delete order error:", error);
-
     res.status(500).json({
       message: "Server error deleting order",
       error: error.message,
