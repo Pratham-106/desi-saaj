@@ -3,20 +3,20 @@ import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-// local images
+/* ✅ Local Hero Images */
 import heroImg from "./../assets/hero.jpeg";
 import trending1 from "./../assets/ds.jpeg";
 import trending2 from "./../assets/DS(1).jpeg";
 import trending3 from "./../assets/DS(2).jpeg";
 
-/* ✅ DEPLOYMENT SAFE API */
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function HomePages() {
   const [trendingProducts, setTrendingProducts] = useState([]);
   const [loadingTrending, setLoadingTrending] = useState(true);
 
-  /* 🔥 FETCH TRENDING PRODUCTS */
+  /* 🔥 Fetch Trending Products */
   useEffect(() => {
     const fetchTrending = async () => {
       try {
@@ -34,7 +34,7 @@ export default function HomePages() {
 
   return (
     <div className="home-pages-container">
-      {/* HERO / CAROUSEL */}
+      {/* ✅ HERO / CAROUSEL */}
       <section className="hero-section">
         <Carousel
           slides={[
@@ -46,7 +46,7 @@ export default function HomePages() {
         />
       </section>
 
-      {/* CATEGORY SECTION */}
+      {/* ✅ CATEGORY SECTION */}
       <section className="category-section">
         <h2 className="section-title">Shop by Category</h2>
 
@@ -65,7 +65,7 @@ export default function HomePages() {
         </div>
       </section>
 
-      {/* 🔥 TRENDING PRODUCTS */}
+      {/* ✅ TRENDING PRODUCTS */}
       <section className="featured-section">
         <div className="trending-header">
           <h2 className="section-title">🔥 Trending Products</h2>
@@ -75,9 +75,7 @@ export default function HomePages() {
         {loadingTrending ? (
           <p style={{ padding: "20px" }}>Loading trending products...</p>
         ) : trendingProducts.length === 0 ? (
-          <p style={{ padding: "20px" }}>
-            No trending products right now.
-          </p>
+          <p style={{ padding: "20px" }}>No trending products right now.</p>
         ) : (
           <div className="trending-scroll">
             {trendingProducts.map((product) => (
@@ -86,10 +84,13 @@ export default function HomePages() {
                 className="featured-card"
                 key={product._id}
               >
+                {/* ✅ CLOUDINARY IMAGE DIRECT */}
                 <img
-                  src={`${API.replace("/api", "")}${(product.images && product.images[0]) || "/uploads/placeholder.jpg"}`}
+                  src={product.images?.[0] || "/no-img.svg"}
                   alt={product.name}
+                  onError={(e) => (e.target.src = "/no-img.svg")}
                 />
+
                 <div className="featured-info">
                   <h4>{product.name}</h4>
                   <p>₹{product.price}</p>
@@ -104,22 +105,26 @@ export default function HomePages() {
 }
 
 /* ==========================
-   Carousel Component
+   ✅ Carousel Component
 ========================== */
 function Carousel({ slides = [], interval = 4000 }) {
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {
     if (!slides || slides.length <= 1) return;
+
     const id = setInterval(() => {
       setCurrent((c) => (c + 1) % slides.length);
     }, interval);
+
     return () => clearInterval(id);
   }, [slides, interval]);
 
   const goTo = (index) => setCurrent(index);
+
   const prev = () =>
     setCurrent((c) => (c - 1 + slides.length) % slides.length);
+
   const next = () =>
     setCurrent((c) => (c + 1) % slides.length);
 
@@ -136,6 +141,7 @@ function Carousel({ slides = [], interval = 4000 }) {
               alt={s.caption || `Slide ${i + 1}`}
               className="carousel-img"
             />
+
             {s.caption && (
               <div className="carousel-caption">{s.caption}</div>
             )}
@@ -143,6 +149,7 @@ function Carousel({ slides = [], interval = 4000 }) {
         ))}
       </div>
 
+      {/* ✅ Controls */}
       <button className="carousel-control prev" onClick={prev}>
         ‹
       </button>
@@ -150,6 +157,7 @@ function Carousel({ slides = [], interval = 4000 }) {
         ›
       </button>
 
+      {/* ✅ Dots */}
       <div className="carousel-dots">
         {slides.map((_, i) => (
           <button

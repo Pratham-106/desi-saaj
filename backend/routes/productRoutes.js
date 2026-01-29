@@ -1,6 +1,7 @@
 import express from "express";
 import upload from "../middleware/uploadMiddleware.js";
-import { protect } from "../middleware/authMiddleware.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
+
 import {
   addProduct,
   getProducts,
@@ -16,72 +17,72 @@ const router = express.Router();
 
 /*
   ==============================
-  PRODUCT ROUTES
+  ✅ PRODUCT ROUTES
   ==============================
 */
 
-/**
- * @route   POST /api/products/add
- * @desc    Add new product (ADMIN)
- * @access  Admin
- */
+/* ==============================
+   ✅ ADD PRODUCT (ADMIN ONLY)
+   POST /api/products/add
+============================== */
 router.post(
   "/add",
+  protect,
+  admin,
   upload.array("images", 5),
   addProduct
 );
 
-/**
- * @route   GET /api/products/trending
- * @desc    Get trending products
- * @access  Public
- */
+/* ==============================
+   ✅ GET TRENDING PRODUCTS
+   GET /api/products/trending
+============================== */
 router.get("/trending", getTrendingProducts);
 
-/**
- * @route   GET /api/products
- * @desc    Get all products
- * @access  Public
- */
+/* ==============================
+   ✅ GET ALL PRODUCTS
+   GET /api/products
+============================== */
 router.get("/", getProducts);
 
-/**
- * @route   GET /api/products/:id
- * @desc    Get single product (with comments)
- * @access  Public
- */
+/* ==============================
+   ✅ GET SINGLE PRODUCT
+   GET /api/products/:id
+============================== */
 router.get("/:id", getProductById);
 
-/**
- * @route   POST /api/products/:id/comment
- * @desc    Add comment to product
- * @access  Private (User)
- */
+/* ==============================
+   ✅ ADD COMMENT (USER)
+   POST /api/products/:id/comment
+============================== */
 router.post("/:id/comment", protect, addProductComment);
 
-/**
- * @route   PUT /api/products/:productId/comment/:reviewId/like
- * @desc    Like / Unlike a comment
- * @access  Private (User)
- */
+/* ==============================
+   ✅ LIKE / UNLIKE COMMENT
+   PUT /api/products/:productId/comment/:reviewId/like
+============================== */
 router.put(
   "/:productId/comment/:reviewId/like",
   protect,
   toggleCommentLike
 );
 
-/**
- * @route   PUT /api/products/:id
- * @desc    Update product (ADMIN)
- * @access  Admin
- */
-router.put("/:id", updateProduct);
+/* ==============================
+   ✅ UPDATE PRODUCT (ADMIN ONLY)
+   PUT /api/products/:id
+============================== */
+router.put(
+  "/:id",
+  protect,
+  admin,
+  upload.array("images", 5),
+  updateProduct
+);
 
-/**
- * @route   DELETE /api/products/:id
- * @desc    Delete product (ADMIN)
- * @access  Admin
- */
-router.delete("/:id", deleteProduct);
+/* ==============================
+   ✅ DELETE PRODUCT (ADMIN ONLY)
+   DELETE /api/products/:id
+============================== */
+router.delete("/:id", protect, admin, deleteProduct);
 
 export default router;

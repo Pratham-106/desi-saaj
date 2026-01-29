@@ -1,31 +1,39 @@
 import { useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../components/AdminLayout";
+import toast from "react-hot-toast";
 import "./../../css/AdminAddProduct.css";
 
-/* ✅ DEPLOYMENT-SAFE API */
+/* ✅ DEPLOYMENT SAFE API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function AdminAddProduct() {
+  /* ✅ Admin Info */
+  const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
+
+  /* ✅ Form State */
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     stockStatus: "IN_STOCK",
     category: "",
     description: "",
-    tags: [], // 🔥 TRENDING TAG
+    tags: [],
   });
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
 
-  /* Handle text & select inputs */
+  /* ============================
+     ✅ HANDLE TEXT INPUTS
+  ============================ */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  /* 🔥 Trending checkbox */
+  /* ============================
+     ✅ TRENDING CHECKBOX
+  ============================ */
   const handleTrendingChange = (e) => {
     setFormData({
       ...formData,
@@ -33,18 +41,22 @@ export default function AdminAddProduct() {
     });
   };
 
-  /* Handle image uploads */
+  /* ============================
+     ✅ IMAGE UPLOAD
+  ============================ */
   const handleImageChange = (e) => {
     setImages([...e.target.files]);
   };
 
-  /* Submit form */
+  /* ============================
+     ✅ SUBMIT PRODUCT
+  ============================ */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setMessage("");
 
     try {
+      /* ✅ FormData for Cloudinary Upload */
       const data = new FormData();
 
       data.append("name", formData.name);
@@ -53,24 +65,27 @@ export default function AdminAddProduct() {
       data.append("category", formData.category);
       data.append("description", formData.description);
 
-      /* 🔥 TAGS */
+      /* ✅ Tags */
       formData.tags.forEach((tag) => {
         data.append("tags", tag);
       });
 
-      /* IMAGES */
+      /* ✅ Images (Cloudinary) */
       images.forEach((img) => {
         data.append("images", img);
       });
 
+      /* ✅ ADMIN AUTH REQUIRED */
       await axios.post(`${API}/products/add`, data, {
         headers: {
+          Authorization: `Bearer ${adminInfo.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
 
-      setMessage("✅ Product added successfully!");
+      toast.success("✅ Product added successfully!");
 
+      /* ✅ Reset Form */
       setFormData({
         name: "",
         price: "",
@@ -79,10 +94,14 @@ export default function AdminAddProduct() {
         description: "",
         tags: [],
       });
+
       setImages([]);
     } catch (error) {
       console.error(error);
-      setMessage("❌ Failed to add product");
+
+      toast.error(
+        error.response?.data?.message || "❌ Failed to add product"
+      );
     } finally {
       setLoading(false);
     }
@@ -93,9 +112,8 @@ export default function AdminAddProduct() {
       <div className="add-product-container">
         <h1>Add New Product</h1>
 
-        {message && <p className="status-msg">{message}</p>}
-
         <form className="product-form" onSubmit={handleSubmit}>
+          {/* ✅ PRODUCT NAME */}
           <div className="form-group">
             <label>Product Name</label>
             <input
@@ -107,6 +125,7 @@ export default function AdminAddProduct() {
             />
           </div>
 
+          {/* ✅ PRICE + STOCK */}
           <div className="form-row">
             <div className="form-group">
               <label>Price (₹)</label>
@@ -134,6 +153,7 @@ export default function AdminAddProduct() {
             </div>
           </div>
 
+          {/* ✅ CATEGORY */}
           <div className="form-group">
             <label>Category</label>
             <select
@@ -149,18 +169,19 @@ export default function AdminAddProduct() {
             </select>
           </div>
 
-          {/* 🔥 TRENDING */}
+          {/* ✅ TRENDING TAG */}
           <div className="form-group checkbox-group">
             <label>
               <input
                 type="checkbox"
                 checked={formData.tags.includes("TRENDING")}
                 onChange={handleTrendingChange}
-              />{" "}
+              />
               Mark as Trending
             </label>
           </div>
 
+          {/* ✅ DESCRIPTION */}
           <div className="form-group">
             <label>Description</label>
             <textarea
@@ -172,6 +193,7 @@ export default function AdminAddProduct() {
             />
           </div>
 
+          {/* ✅ IMAGES */}
           <div className="form-group">
             <label>Upload up to 5 Images</label>
             <input
@@ -183,6 +205,7 @@ export default function AdminAddProduct() {
             />
           </div>
 
+          {/* ✅ SUBMIT */}
           <button className="submit-btn" disabled={loading}>
             {loading ? "Adding..." : "Add Product"}
           </button>
