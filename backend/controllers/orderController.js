@@ -16,7 +16,7 @@ export const createOrder = async (req, res) => {
       totalPrice,
     } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
+    if (!orderItems || orderItems.length === 0) {
       return res.status(400).json({ message: "No order items" });
     }
 
@@ -29,6 +29,10 @@ export const createOrder = async (req, res) => {
       shippingPrice,
       taxPrice,
       totalPrice,
+
+      // ✅ Default status system
+      status: "Placed",
+      isDelivered: false,
     });
 
     const createdOrder = await order.save();
@@ -43,11 +47,14 @@ export const createOrder = async (req, res) => {
 
 /* ============================
    GET USER ORDERS
-   GET /api/orders/myorders
+   GET /api/orders/my-orders
 ============================ */
 export const getMyOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id });
+    const orders = await Order.find({ user: req.user.id }).sort({
+      createdAt: -1,
+    });
+
     res.json(orders);
   } catch (error) {
     res.status(500).json({
@@ -59,7 +66,7 @@ export const getMyOrders = async (req, res) => {
 
 /* ============================
    GET ALL ORDERS (ADMIN)
-   GET /api/orders
+   GET /api/orders/admin/all
 ============================ */
 export const getAllOrders = async (req, res) => {
   try {
@@ -87,14 +94,57 @@ export const getOrderById = async (req, res) => {
       "name email"
     );
 
-    if (order) {
-      res.json(order);
-    } else {
-      res.status(404).json({ message: "Order not found" });
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
     }
+
+    res.json(order);
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch order",
+      error: error.message,
+    });
+  }
+};
+
+/* ============================
+   ✅ UPDATE ORDER STATUS (ADMIN)
+   PUT /api/orders/:id/status
+============================ */
+export const updateOrderStatus = async (req, res) => {
+  try {
+    let { status } = req.body;
+    status = status || "Placed";
+
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // ✅ Normalize status properly
+    order.status =
+      status.charAt(0).toUpperCase() +
+      status.slice(1).toLowerCase();
+
+    // ✅ Sync Delivered Flags
+    if ((status || "").toLowerCase() === "delivered") {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+    } else {
+      order.isDelivered = false;
+      order.deliveredAt = null;
+    }
+
+    await order.save();
+
+    res.json({
+      message: "Order status updated ✅",
+      status: order.status,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update order status",
       error: error.message,
     });
   }
@@ -112,6 +162,7 @@ export const markOrderDelivered = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    order.status = "Delivered";
     order.isDelivered = true;
     order.deliveredAt = Date.now();
 
@@ -141,13 +192,8 @@ export const deleteOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    // ✅ Treat Delivered if either system says delivered
-    const statusDelivered =
-      order.status?.toLowerCase() === "delivered";
-
-    const flagDelivered = order.isDelivered === true;
-
-    if (!statusDelivered && !flagDelivered) {
+    // ✅ Only allow delete if status is Delivered
+    if ((order.status || "").toLowerCase() !== "delivered") {
       return res.status(400).json({
         message: "Only delivered orders can be deleted",
       });
@@ -163,47 +209,6 @@ export const deleteOrder = async (req, res) => {
 
     res.status(500).json({
       message: "Server error deleting order",
-      error: error.message,
-    });
-  }
-};
-/* ============================
-   ✅ UPDATE ORDER STATUS (ADMIN)
-   PUT /api/orders/:id/status
-============================ */
-export const updateOrderStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-
-    const order = await Order.findById(req.params.id);
-
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
-    }
-
-    // ✅ Update status
-    order.status = status;
-
-    // ✅ If Delivered → update delivered flags
-    if (status.toLowerCase() === "delivered") {
-      order.isDelivered = true;
-      order.deliveredAt = Date.now();
-    } else {
-      order.isDelivered = false;
-      order.deliveredAt = null;
-    }
-
-    await order.save();
-
-    res.json({
-      message: "Order status updated ✅",
-      status: order.status,
-    });
-  } catch (error) {
-    console.error("Update order status error:", error);
-
-    res.status(500).json({
-      message: "Failed to update order status",
       error: error.message,
     });
   }
