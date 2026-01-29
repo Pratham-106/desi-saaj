@@ -12,10 +12,10 @@ const router = express.Router();
 /* ✅ Admin Login */
 router.post("/login", adminLogin);
 
-/* ✅ Get All Users */
+/* ✅ Admin: Get All Users */
 router.get("/users", protect, admin, getAllUsers);
 
-/* ✅ Delete User */
+/* ✅ Admin: Delete User */
 router.delete("/users/:id", protect, admin, deleteUser);
 
 export default router;
