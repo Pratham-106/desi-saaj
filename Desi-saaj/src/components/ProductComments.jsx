@@ -5,9 +5,8 @@ import { useUser } from "../context/user/useUser";
 import toast from "react-hot-toast";
 import "./../css/ProductComments.css";
 
-/* ✅ DEPLOYMENT-SAFE API */
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
 
 export default function ProductComments({ productId, reviews = [] }) {
   const { user } = useUser();
@@ -16,9 +15,9 @@ export default function ProductComments({ productId, reviews = [] }) {
   const [comment, setComment] = useState("");
   const [localReviews, setLocalReviews] = useState(reviews);
 
-  /* =========================
+  /* ============================
      ADD COMMENT
-  ========================= */
+  ============================ */
   const submitComment = async () => {
     if (!user) {
       navigate("/login");
@@ -41,18 +40,20 @@ export default function ProductComments({ productId, reviews = [] }) {
         }
       );
 
+      // ✅ Replace reviews directly
       setLocalReviews(res.data.reviews);
+
       setComment("");
-      toast.success("Comment added successfully");
+      toast.success("Comment added successfully ✅");
     } catch (error) {
       console.error(error);
       toast.error("Failed to add comment");
     }
   };
 
-  /* =========================
+  /* ============================
      LIKE / UNLIKE COMMENT
-  ========================= */
+  ============================ */
   const toggleLike = async (reviewId) => {
     if (!user) {
       navigate("/login");
@@ -70,16 +71,10 @@ export default function ProductComments({ productId, reviews = [] }) {
         }
       );
 
-      setLocalReviews((prev) =>
-        prev.map((review) =>
-          review._id === reviewId
-            ? {
-                ...review,
-                likes: Array(res.data.likesCount).fill(1),
-              }
-            : review
-        )
-      );
+      // ✅ Backend should return updated reviews
+      setLocalReviews(res.data.reviews);
+
+      toast.success("Like updated ❤️");
     } catch (error) {
       console.error(error);
       toast.error("Failed to like comment");
@@ -90,7 +85,7 @@ export default function ProductComments({ productId, reviews = [] }) {
     <div className="comments-section">
       <h2>Customer Comments</h2>
 
-      {/* ADD COMMENT */}
+      {/* ✅ Add Comment */}
       <div className="add-comment-box">
         <textarea
           placeholder={
@@ -100,12 +95,13 @@ export default function ProductComments({ productId, reviews = [] }) {
           onChange={(e) => setComment(e.target.value)}
           disabled={!user}
         />
+
         <button onClick={submitComment} disabled={!user}>
           Post Comment
         </button>
       </div>
 
-      {/* COMMENTS LIST */}
+      {/* ✅ Comments List */}
       {localReviews.length === 0 ? (
         <p className="no-comments">No comments yet. Be the first!</p>
       ) : (
@@ -121,11 +117,12 @@ export default function ProductComments({ productId, reviews = [] }) {
 
               <p className="comment-text">{review.comment}</p>
 
+              {/* ✅ Like Button */}
               <button
                 className="like-btn"
                 onClick={() => toggleLike(review._id)}
               >
-                 {review.likes?.length || 0}
+                ❤️ {review.likes?.length || 0}
               </button>
             </div>
           ))}
