@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import AdminLayout from "../../components/AdminLayout";
-import "./../../css/AdminOrders.css";
 import toast from "react-hot-toast";
+import "./../../css/AdminOrders.css";
 
 /* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -13,34 +13,34 @@ export default function AdminOrders() {
 
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("placed");
+  const [activeTab, setActiveTab] = useState("PLACED");
 
   /* ============================
-     FETCH ALL ORDERS (ADMIN)
+     ✅ FETCH ALL ORDERS
   ============================ */
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get(`${API}/orders/admin/all`, {
+        headers: {
+          Authorization: `Bearer ${adminInfo.token}`,
+        },
+      });
+
+      setOrders(data || []);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to fetch orders");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const { data } = await axios.get(`${API}/orders/admin/all`, {
-          headers: {
-            Authorization: `Bearer ${adminInfo.token}`,
-          },
-        });
-
-        setOrders(data || []);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to fetch orders");
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
   }, []);
 
   /* ============================
-     UPDATE ORDER STATUS
+     ✅ UPDATE ORDER STATUS
   ============================ */
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -54,21 +54,24 @@ export default function AdminOrders() {
         }
       );
 
+      toast.success("Status updated ✅");
+
+      // ✅ Update UI instantly
       setOrders((prev) =>
         prev.map((o) =>
-          o._id === orderId ? { ...o, status: data.status } : o
+          o._id === orderId
+            ? { ...o, orderStatus: data.orderStatus }
+            : o
         )
       );
-
-      toast.success("Order status updated ✅");
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to update status");
     }
   };
 
   /* ============================
-     ✅ DELETE DELIVERED ORDER
+     ✅ DELETE ORDER (ONLY DELIVERED)
   ============================ */
   const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Delete this delivered order permanently?")) return;
@@ -84,100 +87,92 @@ export default function AdminOrders() {
 
       // ✅ Remove instantly
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Delete failed");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Delete failed");
     }
   };
 
   /* ============================
-     ✅ SAFE GROUPING BY STATUS
+     ✅ FILTER BY STATUS
   ============================ */
-  const placedOrders = orders.filter(
-    (o) => (o.status || "Placed").toLowerCase() === "placed"
-  );
-
+  const placedOrders = orders.filter((o) => o.orderStatus === "PLACED");
   const processingOrders = orders.filter(
-    (o) => (o.status || "").toLowerCase() === "processing"
+    (o) => o.orderStatus === "PROCESSING"
   );
-
   const deliveredOrders = orders.filter(
-    (o) => (o.status || "").toLowerCase() === "delivered"
+    (o) => o.orderStatus === "DELIVERED"
   );
 
-  const getOrdersForTab = () => {
-    if (activeTab === "placed") return placedOrders;
-    if (activeTab === "processing") return processingOrders;
-    if (activeTab === "delivered") return deliveredOrders;
+  const ordersForTab = () => {
+    if (activeTab === "PLACED") return placedOrders;
+    if (activeTab === "PROCESSING") return processingOrders;
+    if (activeTab === "DELIVERED") return deliveredOrders;
     return [];
   };
 
   /* ============================
-     RENDER ORDER CARD
+     ✅ RENDER ORDER CARD
   ============================ */
-  const renderOrderCard = (order) => {
-    const status = (order.status || "Placed").toLowerCase();
+  const renderOrder = (order) => (
+    <div key={order._id} className="admin-order-card">
+      <h3>Order #{order._id.slice(-8)}</h3>
 
-    return (
-      <div key={order._id} className="admin-order-card">
-        <h3>Order #{order._id.slice(-8)}</h3>
+      <p>
+        <strong>User:</strong> {order.user?.email}
+      </p>
 
-        <p>
-          <strong>User:</strong> {order.user?.email}
-        </p>
+      <p>
+        <strong>Total:</strong> ₹{order.totalPrice}
+      </p>
 
-        <p>
-          <strong>Total:</strong> ₹{order.totalPrice}
-        </p>
+      {/* ✅ STATUS DROPDOWN */}
+      <select
+        className="status-select"
+        value={order.orderStatus}
+        onChange={(e) =>
+          handleStatusChange(order._id, e.target.value)
+        }
+      >
+        <option value="PLACED">Placed</option>
+        <option value="PROCESSING">Processing</option>
+        <option value="DELIVERED">Delivered</option>
+      </select>
 
-        {/* ✅ Status Dropdown */}
-        <select
-          value={order.status || "Placed"}
-          onChange={(e) =>
-            handleStatusChange(order._id, e.target.value)
-          }
-          className="status-select"
-        >
-          <option value="Placed">Placed</option>
-          <option value="Processing">Processing</option>
-          <option value="Delivered">Delivered</option>
-        </select>
+      {/* ✅ ITEMS */}
+      <div className="order-items">
+        {(order.orderItems || []).map((item, idx) => (
+          <div key={idx} className="order-item">
+            <img
+              src={
+                item.image
+                  ? `${BASE_URL}${item.image}`
+                  : "/placeholder.png"
+              }
+              alt={item.name}
+            />
 
-        {/* ✅ Items */}
-        <div className="order-items">
-          {(order.orderItems || []).map((item, idx) => (
-            <div key={idx} className="order-item">
-              <img
-                src={
-                  item.image
-                    ? `${BASE_URL}${item.image}`
-                    : "/placeholder.png"
-                }
-                alt={item.name}
-              />
-
-              <div>
-                <p>{item.name}</p>
-                <p>
-                  ₹{item.price} × {item.qty}
-                </p>
-              </div>
+            <div>
+              <p>{item.name}</p>
+              <p>
+                ₹{item.price} × {item.qty}
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* ✅ Delete Button Only If Delivered */}
-        {status === "delivered" && (
-          <button
-            className="delete-order-btn"
-            onClick={() => handleDeleteOrder(order._id)}
-          >
-            🗑 Delete Delivered Order
-          </button>
-        )}
+          </div>
+        ))}
       </div>
-    );
-  };
+
+      {/* ✅ DELETE ONLY DELIVERED */}
+      {order.orderStatus === "DELIVERED" && (
+        <button
+          className="delete-order-btn"
+          onClick={() => handleDeleteOrder(order._id)}
+        >
+          🗑 Delete Delivered Order
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <AdminLayout>
@@ -190,25 +185,25 @@ export default function AdminOrders() {
           <>
             {/* ✅ Tabs */}
             <div className="orders-tabs">
-              <button onClick={() => setActiveTab("placed")}>
+              <button onClick={() => setActiveTab("PLACED")}>
                 📦 Placed ({placedOrders.length})
               </button>
 
-              <button onClick={() => setActiveTab("processing")}>
+              <button onClick={() => setActiveTab("PROCESSING")}>
                 ⚙️ Processing ({processingOrders.length})
               </button>
 
-              <button onClick={() => setActiveTab("delivered")}>
+              <button onClick={() => setActiveTab("DELIVERED")}>
                 ✅ Delivered ({deliveredOrders.length})
               </button>
             </div>
 
-            {/* ✅ Orders List */}
+            {/* ✅ Orders */}
             <div className="admin-orders-list">
-              {getOrdersForTab().length === 0 ? (
-                <p>No orders in this tab.</p>
+              {ordersForTab().length === 0 ? (
+                <p>No orders here.</p>
               ) : (
-                getOrdersForTab().map(renderOrderCard)
+                ordersForTab().map(renderOrder)
               )}
             </div>
           </>

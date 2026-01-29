@@ -15,7 +15,26 @@ export default function MyOrdersPage() {
   const [loading, setLoading] = useState(true);
 
   /* ============================
-     🔐 Protect Page (Login Required)
+     ✅ FETCH USER ORDERS
+  ============================ */
+  const fetchOrders = async () => {
+    try {
+      const { data } = await axios.get(`${API}/orders/my-orders`, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+
+      setOrders(data || []);
+    } catch (error) {
+      console.error("Fetch orders error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /* ============================
+     ✅ AUTO REFRESH ORDERS
   ============================ */
   useEffect(() => {
     if (!user || !user.token) {
@@ -23,28 +42,14 @@ export default function MyOrdersPage() {
       return;
     }
 
-    const fetchOrders = async () => {
-      try {
-        const { data } = await axios.get(`${API}/orders/my-orders`, {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-          },
-        });
-
-        setOrders(data || []);
-      } catch (error) {
-        console.error("Fetch orders error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchOrders();
+
+    // ✅ Refresh every 6 seconds
+    const interval = setInterval(fetchOrders, 6000);
+
+    return () => clearInterval(interval);
   }, [user, navigate]);
 
-  /* ============================
-     UI Render
-  ============================ */
   return (
     <div className="my-orders-page">
       <h1>My Orders</h1>
@@ -57,12 +62,12 @@ export default function MyOrdersPage() {
         <div className="orders-list">
           {orders.map((order) => (
             <Link
-              to={`/order/${order._id}`}
               key={order._id}
+              to={`/order/${order._id}`}
               className="order-card"
             >
               <div>
-                <strong>Order ID:</strong> {order._id}
+                <strong>Order ID:</strong> {order._id.slice(-8)}
               </div>
 
               <div>
@@ -74,12 +79,15 @@ export default function MyOrdersPage() {
                 <strong>Total:</strong> ₹{order.totalPrice}
               </div>
 
+              {/* ✅ STATUS (orderStatus Field) */}
               <div>
                 <strong>Status:</strong>{" "}
                 <span
-                  className={`status ${(order.status || "Placed").toLowerCase()}`}
+                  className={`status ${(
+                    order.orderStatus || "PLACED"
+                  ).toLowerCase()}`}
                 >
-                  {order.status || "Placed"}
+                  {order.orderStatus || "PLACED"}
                 </span>
               </div>
             </Link>

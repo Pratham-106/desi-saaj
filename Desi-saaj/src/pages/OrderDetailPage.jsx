@@ -44,10 +44,10 @@ export default function OrderDetailPage() {
       }
     };
 
-    // ✅ Initial Fetch
+    // ✅ Initial fetch
     fetchOrder();
 
-    // ✅ Auto Refresh every 5 seconds
+    // ✅ Auto refresh every 5 seconds
     const interval = setInterval(fetchOrder, 5000);
 
     return () => {
@@ -60,16 +60,14 @@ export default function OrderDetailPage() {
   if (!order) return <p>Order not found.</p>;
 
   /* ============================
-     ✅ STATUS TIMELINE SAFE
+     ✅ STATUS TIMELINE (orderStatus)
   ============================ */
-  const statusSteps = ["Placed", "Processing", "Delivered"];
+  const statusSteps = ["PLACED", "PROCESSING", "DELIVERED"];
 
   const currentStatusIndex = Math.max(
     0,
     statusSteps.findIndex(
-      (s) =>
-        s.toLowerCase() ===
-        (order.status || "Placed").toLowerCase()
+      (s) => s === (order.orderStatus || "PLACED")
     )
   );
 
@@ -88,10 +86,11 @@ export default function OrderDetailPage() {
           {new Date(order.createdAt).toLocaleDateString()}
         </p>
 
+        {/* ✅ Correct Status */}
         <p>
           <strong>Status:</strong>{" "}
           <span className="status">
-            {order.status || "Placed"}
+            {order.orderStatus || "PLACED"}
           </span>
         </p>
 
@@ -107,6 +106,7 @@ export default function OrderDetailPage() {
               <div className="dot">
                 {idx < currentStatusIndex ? "✓" : idx + 1}
               </div>
+
               <div className="label">{step}</div>
 
               {idx < statusSteps.length - 1 && (

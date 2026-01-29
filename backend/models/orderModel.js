@@ -21,6 +21,7 @@ const orderSchema = mongoose.Schema(
         size: { type: String },
         image: { type: String },
         price: { type: Number, required: true },
+
         product: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Product",
@@ -43,7 +44,7 @@ const orderSchema = mongoose.Schema(
     },
 
     /* =====================
-       PAYMENT (GATEWAY READY)
+       PAYMENT METHOD
     ====================== */
     paymentMethod: {
       type: String,
@@ -67,9 +68,9 @@ const orderSchema = mongoose.Schema(
     },
 
     paymentResult: {
-      id: String,       // Razorpay payment_id (later)
-      status: String,   // captured / failed
-      email: String,    // payer email
+      id: String,
+      status: String,
+      email: String,
     },
 
     /* =====================
@@ -94,12 +95,22 @@ const orderSchema = mongoose.Schema(
     },
 
     /* =====================
-       ORDER STATUS
+       ✅ ORDER STATUS SYSTEM
     ====================== */
     orderStatus: {
       type: String,
-      enum: ["PLACED", "CONFIRMED", "SHIPPED", "DELIVERED", "CANCELLED"],
+      enum: ["PLACED", "PROCESSING", "DELIVERED", "CANCELLED"],
       default: "PLACED",
+    },
+
+    /* ✅ Delivered Flags */
+    isDelivered: {
+      type: Boolean,
+      default: false,
+    },
+
+    deliveredAt: {
+      type: Date,
     },
   },
   {
