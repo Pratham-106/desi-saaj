@@ -6,7 +6,6 @@ import "./../css/OrderDetailPage.css";
 
 /* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const BASE_URL = API.replace("/api", "");
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -60,7 +59,7 @@ export default function OrderDetailPage() {
   if (!order) return <p>Order not found.</p>;
 
   /* ============================
-     ✅ STATUS TIMELINE (orderStatus)
+     ✅ STATUS TIMELINE
   ============================ */
   const statusSteps = ["PLACED", "PROCESSING", "DELIVERED"];
 
@@ -86,7 +85,6 @@ export default function OrderDetailPage() {
           {new Date(order.createdAt).toLocaleDateString()}
         </p>
 
-        {/* ✅ Correct Status */}
         <p>
           <strong>Status:</strong>{" "}
           <span className="status">
@@ -99,9 +97,7 @@ export default function OrderDetailPage() {
           {statusSteps.map((step, idx) => (
             <div
               key={step}
-              className={`step ${
-                idx <= currentStatusIndex ? "active" : ""
-              }`}
+              className={`step ${idx <= currentStatusIndex ? "active" : ""}`}
             >
               <div className="dot">
                 {idx < currentStatusIndex ? "✓" : idx + 1}
@@ -122,13 +118,11 @@ export default function OrderDetailPage() {
 
       {(order.orderItems || []).map((item, index) => (
         <div key={index} className="order-item">
+          {/* ✅ Cloudinary Image Direct */}
           <img
-            src={
-              item.image
-                ? `${BASE_URL}${item.image}`
-                : "/placeholder.png"
-            }
+            src={item.image || "/no-img.svg"}
             alt={item.name}
+            onError={(e) => (e.target.src = "/no-img.svg")}
           />
 
           <div>

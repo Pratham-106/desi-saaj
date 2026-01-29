@@ -22,9 +22,8 @@ export const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid stock status" });
     }
 
-    // ✅ Store only path (Deployment Safe)
-    const images =
-      req.files?.map((file) => `/uploads/${file.filename}`) || [];
+    /* ✅ CLOUDINARY IMAGE URLS */
+    const images = req.files?.map((file) => file.path) || [];
 
     const product = await Product.create({
       name,
@@ -55,7 +54,10 @@ export const getProducts = async (req, res) => {
     const { category } = req.query;
 
     const filter = category ? { category } : {};
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+
+    const products = await Product.find(filter).sort({
+      createdAt: -1,
+    });
 
     res.json(products);
   } catch (error) {
@@ -69,7 +71,9 @@ export const getProducts = async (req, res) => {
 ============================== */
 export const getTrendingProducts = async (req, res) => {
   try {
-    const products = await Product.find({ tags: "TRENDING" })
+    const products = await Product.find({
+      tags: "TRENDING",
+    })
       .sort({ createdAt: -1 })
       .limit(8);
 
@@ -108,6 +112,7 @@ export const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product not found" });
 
     await product.deleteOne();
+
     res.json({ message: "Product deleted successfully ✅" });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -136,9 +141,8 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid stock status" });
     }
 
-    // ✅ Support optional new images upload
-    const newImages =
-      req.files?.map((file) => `/uploads/${file.filename}`) || null;
+    /* ✅ Optional New Cloudinary Images */
+    const newImages = req.files?.map((file) => file.path) || null;
 
     const updatedData = {
       name,
@@ -150,6 +154,7 @@ export const updateProduct = async (req, res) => {
       tags,
     };
 
+    /* ✅ Replace Images Only If Uploaded */
     if (newImages && newImages.length > 0) {
       updatedData.images = newImages;
     }
@@ -230,7 +235,9 @@ export const toggleCommentLike = async (req, res) => {
       .includes(userId);
 
     if (alreadyLiked) {
-      review.likes = review.likes.filter((id) => id.toString() !== userId);
+      review.likes = review.likes.filter(
+        (id) => id.toString() !== userId
+      );
     } else {
       review.likes.push(req.user._id);
     }

@@ -1,44 +1,24 @@
 import multer from "multer";
-import path from "path";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import cloudinary from "cloudinary";
+import dotenv from "dotenv";
 
-// ==============================
-// STORAGE CONFIG
-// ==============================
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename(req, file, cb) {
-    const uniqueName =
-      Date.now() +
-      "-" +
-      Math.round(Math.random() * 1e9) +
-      path.extname(file.originalname);
-    cb(null, uniqueName);
+dotenv.config();
+
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: "desisaaj-products",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
   },
 });
 
-// ==============================
-// FILE FILTER (IMAGES ONLY)
-// ==============================
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only image files are allowed"), false);
-  }
-};
-
-// ==============================
-// MULTER INSTANCE
-// ==============================
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: {
-    files: 5,                 // ⬅️ MAX 5 IMAGES
-    fileSize: 5 * 1024 * 1024 // ⬅️ 5MB PER IMAGE
-  },
-});
+const upload = multer({ storage });
 
 export default upload;

@@ -4,8 +4,8 @@ import AdminLayout from "../../components/AdminLayout";
 import toast from "react-hot-toast";
 import "./../../css/AdminOrders.css";
 
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const BASE_URL = API.replace("/api", "");
 
 export default function AdminOrders() {
   const adminInfo = JSON.parse(localStorage.getItem("adminInfo") || "{}");
@@ -14,15 +14,20 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("PLACED");
 
-  /* ✅ FETCH */
+  /* ============================
+     ✅ FETCH ALL ORDERS
+  ============================ */
   const fetchOrders = async () => {
     try {
       const { data } = await axios.get(`${API}/orders/admin/all`, {
-        headers: { Authorization: `Bearer ${adminInfo.token}` },
+        headers: {
+          Authorization: `Bearer ${adminInfo.token}`,
+        },
       });
 
       setOrders(data || []);
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to fetch orders");
     } finally {
       setLoading(false);
@@ -33,54 +38,70 @@ export default function AdminOrders() {
     fetchOrders();
   }, []);
 
-  /* ✅ UPDATE STATUS */
+  /* ============================
+     ✅ UPDATE STATUS
+  ============================ */
   const handleStatusChange = async (orderId, newStatus) => {
     try {
       const { data } = await axios.put(
         `${API}/orders/${orderId}/status`,
         { status: newStatus },
         {
-          headers: { Authorization: `Bearer ${adminInfo.token}` },
+          headers: {
+            Authorization: `Bearer ${adminInfo.token}`,
+          },
         }
       );
 
       toast.success("Status Updated ✅");
 
-      // ✅ Replace full updated order
+      // ✅ Update UI instantly
       setOrders((prev) =>
         prev.map((o) => (o._id === orderId ? data.order : o))
       );
 
-      // ✅ Switch tab automatically
+      // ✅ Auto-switch tab
       setActiveTab(newStatus);
-    } catch {
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to update status");
     }
   };
 
-  /* ✅ DELETE */
+  /* ============================
+     ✅ DELETE ORDER (DELIVERED ONLY)
+  ============================ */
   const handleDeleteOrder = async (orderId) => {
     if (!window.confirm("Delete delivered order permanently?")) return;
 
     try {
       await axios.delete(`${API}/orders/${orderId}`, {
-        headers: { Authorization: `Bearer ${adminInfo.token}` },
+        headers: {
+          Authorization: `Bearer ${adminInfo.token}`,
+        },
       });
 
       toast.success("Order deleted ✅");
+
+      // ✅ Remove instantly
       setOrders((prev) => prev.filter((o) => o._id !== orderId));
     } catch (err) {
+      console.error(err);
       toast.error(err.response?.data?.message || "Delete failed");
     }
   };
 
-  /* ✅ NORMALIZED FILTERS */
+  /* ============================
+     ✅ FILTERS
+  ============================ */
   const placedOrders = orders.filter(
     (o) => (o.orderStatus || "").toUpperCase() === "PLACED"
   );
+
   const processingOrders = orders.filter(
     (o) => (o.orderStatus || "").toUpperCase() === "PROCESSING"
   );
+
   const deliveredOrders = orders.filter(
     (o) => (o.orderStatus || "").toUpperCase() === "DELIVERED"
   );
@@ -116,7 +137,7 @@ export default function AdminOrders() {
               </button>
             </div>
 
-            {/* ✅ Orders */}
+            {/* ✅ Orders List */}
             <div className="admin-orders-list">
               {ordersForTab().length === 0 ? (
                 <p>No orders here.</p>
@@ -125,10 +146,15 @@ export default function AdminOrders() {
                   <div key={order._id} className="admin-order-card">
                     <h3>Order #{order._id.slice(-8)}</h3>
 
-                    <p>User: {order.user?.email}</p>
-                    <p>Total: ₹{order.totalPrice}</p>
+                    <p>
+                      <strong>User:</strong> {order.user?.email}
+                    </p>
 
-                    {/* ✅ Dropdown */}
+                    <p>
+                      <strong>Total:</strong> ₹{order.totalPrice}
+                    </p>
+
+                    {/* ✅ Status Dropdown */}
                     <select
                       value={(order.orderStatus || "PLACED").toUpperCase()}
                       onChange={(e) =>
@@ -140,7 +166,7 @@ export default function AdminOrders() {
                       <option value="DELIVERED">Delivered</option>
                     </select>
 
-                    {/* ✅ Delete Button */}
+                    {/* ✅ Delete Delivered Only */}
                     {(order.orderStatus || "").toUpperCase() === "DELIVERED" && (
                       <button
                         className="delete-order-btn"

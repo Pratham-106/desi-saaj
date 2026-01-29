@@ -2,20 +2,17 @@ import { useCart } from "../context/cart/useCart";
 import { useNavigate } from "react-router-dom";
 import "./../css/CartPage.css";
 
-/* ✅ DEPLOYMENT-SAFE API */
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-
 export default function CartPage() {
   const { cart, removeFromCart, updateQty } = useCart();
   const navigate = useNavigate();
 
-  /* ✅ SAFE SUBTOTAL */
+  /* ✅ SUBTOTAL */
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * (item.qty || 1),
     0
   );
 
-  /* ✅ SAFE DELIVERY (highest delivery charge in cart) */
+  /* ✅ DELIVERY (highest charge in cart) */
   const deliveryCharge =
     cart.length > 0
       ? Math.max(...cart.map((item) => item.deliveryCharge || 0))
@@ -31,16 +28,18 @@ export default function CartPage() {
         <p className="empty-cart">Your cart is empty.</p>
       ) : (
         <div className="cart-layout">
-          {/* CART ITEMS */}
+          {/* ✅ CART ITEMS */}
           <div className="cart-items">
             {cart.map((item) => (
               <div
                 className="cart-item"
                 key={`${item._id}-${item.size}`}
               >
+                {/* ✅ CLOUDINARY IMAGE DIRECT */}
                 <img
-                  src={`${API.replace("/api", "")}${(item.images && item.images[0]) || "/uploads/placeholder.jpg"}`}
+                  src={item.images?.[0] || "/no-img.svg"}
                   alt={item.name}
+                  onError={(e) => (e.target.src = "/no-img.svg")}
                 />
 
                 <div className="cart-item-info">
@@ -52,7 +51,7 @@ export default function CartPage() {
 
                   <p className="cart-price">₹{item.price}</p>
 
-                  {/* QUANTITY CONTROLS */}
+                  {/* ✅ QUANTITY CONTROLS */}
                   <div className="qty-controls">
                     <button
                       disabled={(item.qty || 1) === 1}
@@ -82,6 +81,7 @@ export default function CartPage() {
                     </button>
                   </div>
 
+                  {/* ✅ REMOVE */}
                   <button
                     className="remove-btn"
                     onClick={() =>
@@ -95,7 +95,7 @@ export default function CartPage() {
             ))}
           </div>
 
-          {/* SUMMARY */}
+          {/* ✅ SUMMARY */}
           <div className="cart-summary">
             <h2>Order Summary</h2>
 

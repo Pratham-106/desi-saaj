@@ -3,15 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../context/cart/useCart";
 import "./../css/Checkout.css";
 
-/* ✅ DEPLOYMENT SAFE API */
-const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
-const BASE_URL = API.replace("/api", "");
-
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const { cart } = useCart();
 
-  /* ✅ Redirect if cart is empty (Safe React Way) */
+  /* ✅ Redirect if cart is empty */
   useEffect(() => {
     if (!cart || cart.length === 0) {
       navigate("/cart");
@@ -22,7 +18,7 @@ export default function CheckoutPage() {
   if (!cart || cart.length === 0) return null;
 
   /* ============================
-     PRICE CALCULATIONS
+     ✅ PRICE CALCULATIONS
   ============================ */
   const subtotal = cart.reduce(
     (acc, item) => acc + item.price * (item.qty || 1),
@@ -54,13 +50,11 @@ export default function CheckoutPage() {
               key={`${item._id}-${item.size}`}
               className="checkout-item"
             >
+              {/* ✅ CLOUDINARY IMAGE DIRECT */}
               <img
-                src={
-                  item.images?.length > 0
-                    ? `${BASE_URL}${item.images[0]}`
-                    : "/placeholder.png"
-                }
+                src={item.images?.[0] || "/no-img.svg"}
                 alt={item.name}
+                onError={(e) => (e.target.src = "/no-img.svg")}
               />
 
               <div>
@@ -89,9 +83,7 @@ export default function CheckoutPage() {
             <div>
               <span>Delivery</span>
               <span>
-                {deliveryCharge === 0
-                  ? "Free"
-                  : `₹${deliveryCharge}`}
+                {deliveryCharge === 0 ? "Free" : `₹${deliveryCharge}`}
               </span>
             </div>
 

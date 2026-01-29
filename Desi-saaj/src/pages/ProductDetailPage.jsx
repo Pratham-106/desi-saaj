@@ -6,7 +6,7 @@ import { useCart } from "../context/cart/useCart";
 import "./../css/ProductDetailPage.css";
 import ProductComments from "../components/ProductComments";
 
-/* ✅ DEPLOYMENT-SAFE API */
+/* ✅ Deployment Safe API */
 const API = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function ProductDetailPage() {
@@ -19,12 +19,18 @@ export default function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState("");
 
+  /* ============================
+     ✅ FETCH PRODUCT
+  ============================ */
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(`${API}/products/${id}`);
+
         setProduct(res.data);
-        setMainImage((res.data.images && res.data.images[0]) || "/uploads/placeholder.jpg");
+
+        // ✅ Cloudinary Direct URL
+        setMainImage(res.data.images?.[0] || "/no-img.svg");
       } catch (error) {
         console.error("Failed to fetch product", error);
       } finally {
@@ -40,6 +46,9 @@ export default function ProductDetailPage() {
 
   const isOutOfStock = product.stockStatus === "OUT_OF_STOCK";
 
+  /* ============================
+     ✅ ADD TO CART
+  ============================ */
   const handleAddToCart = () => {
     if (isOutOfStock) {
       toast.error("This product is currently out of stock");
@@ -63,7 +72,9 @@ export default function ProductDetailPage() {
     toast.success("Item added to cart 🛒");
   };
 
-  /* 🛍️ BUY NOW - Add to cart and go directly to checkout */
+  /* ============================
+     ✅ BUY NOW
+  ============================ */
   const handleBuyNow = () => {
     if (isOutOfStock) {
       toast.error("This product is currently out of stock");
@@ -84,12 +95,16 @@ export default function ProductDetailPage() {
       deliveryCharge: product.deliveryCharge || 0,
     });
 
-    toast.success("Item added! Redirecting to checkout 🛍️");
+    toast.success("Redirecting to checkout 🛍️");
+
     setTimeout(() => {
       navigate("/checkout");
     }, 500);
   };
 
+  /* ============================
+     ✅ STOCK LABEL
+  ============================ */
   const getStockLabel = () => {
     switch (product.stockStatus) {
       case "IN_STOCK":
@@ -103,45 +118,45 @@ export default function ProductDetailPage() {
     }
   };
 
-  /* ✅ BASE URL FOR IMAGES */
-  const IMAGE_BASE = API.replace("/api", "");
-
   return (
     <div className="product-detail-container">
       <div className="product-detail-content">
-        {/* IMAGES */}
+        {/* ✅ IMAGES */}
         <div className="product-images">
+          {/* ✅ MAIN IMAGE */}
           <img
-            src={`${IMAGE_BASE}${mainImage}`}
+            src={mainImage}
             alt={product.name}
             className="main-image"
+            onError={(e) => (e.target.src = "/no-img.svg")}
           />
 
+          {/* ✅ THUMBNAILS */}
           <div className="thumbnail-row">
             {(product.images || []).map((img, index) => (
               <img
                 key={index}
-                src={`${IMAGE_BASE}${img}`}
+                src={img}
                 alt="thumb"
-                className={`thumbnail ${
-                  mainImage === img ? "active" : ""
-                }`}
+                className={`thumbnail ${mainImage === img ? "active" : ""}`}
                 onClick={() => setMainImage(img)}
+                onError={(e) => (e.target.src = "/no-img.svg")}
               />
             ))}
           </div>
         </div>
 
-        {/* INFO */}
+        {/* ✅ INFO */}
         <div className="product-info">
           <h1 className="product-title">{product.name}</h1>
 
           <p className="category">{product.category}</p>
           <p className="price">₹{product.price}</p>
 
-          {/* STOCK STATUS */}
+          {/* ✅ STOCK */}
           <div className="stock-status">{getStockLabel()}</div>
 
+          {/* ✅ DELIVERY */}
           <p className="delivery-info">
             {product.deliveryCharge > 0
               ? ` Delivery Charge: ₹${product.deliveryCharge}`
@@ -150,16 +165,15 @@ export default function ProductDetailPage() {
 
           <p className="description">{product.description}</p>
 
-          {/* SIZE */}
+          {/* ✅ SIZE OPTIONS */}
           <div className="size-section">
             <p className="section-label">Select Size</p>
+
             <div className="size-options">
               {["S", "M", "L", "XL"].map((size) => (
                 <button
                   key={size}
-                  className={`size-btn ${
-                    selectedSize === size ? "active" : ""
-                  }`}
+                  className={`size-btn ${selectedSize === size ? "active" : ""}`}
                   onClick={() => setSelectedSize(size)}
                   disabled={isOutOfStock}
                 >
@@ -169,7 +183,7 @@ export default function ProductDetailPage() {
             </div>
           </div>
 
-          {/* ADD TO CART & BUY NOW */}
+          {/* ✅ BUTTONS */}
           <div className="button-group">
             <button
               className="add-to-cart-btn"
@@ -188,19 +202,16 @@ export default function ProductDetailPage() {
             </button>
           </div>
 
-          {/* TRUST */}
+          {/* ✅ TRUST */}
           <div className="trust-info">
-            <p>🔁 Easy 7-Day Returns</p>
-            <p>🔒 Secure Payments</p>
+            <p> Easy 7-Day Returns</p>
+            <p> Secure Payments</p>
           </div>
         </div>
       </div>
 
-      {/* COMMENTS */}
-      <ProductComments
-        productId={product._id}
-        reviews={product.reviews || []}
-      />
+      {/* ✅ COMMENTS */}
+      <ProductComments productId={product._id} reviews={product.reviews || []} />
     </div>
   );
 }
