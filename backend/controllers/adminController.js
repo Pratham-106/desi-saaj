@@ -1,76 +1,54 @@
-import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 /* ============================
-   ADMIN LOGIN
+   ✅ ADMIN LOGIN (REAL)
    POST /api/admin/login
 ============================ */
 export const adminLogin = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@desisaaj.com";
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
+    // ✅ Find user in DB
+    const adminUser = await User.findOne({ email });
 
-  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    if (!adminUser) {
+      return res.status(401).json({ message: "Admin not found" });
+    }
+
+    // ✅ Must be admin
+    if (!adminUser.isAdmin) {
+      return res.status(403).json({ message: "Not authorized as admin" });
+    }
+
+    // ✅ Compare password
+    const isMatch = await bcrypt.compare(password, adminUser.password);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
+
+    // ✅ Generate token
     const token = jwt.sign(
-      { id: "admin-id", isAdmin: true },
+      {
+        id: adminUser._id,
+        isAdmin: true,
+      },
       process.env.JWT_SECRET,
       { expiresIn: "30d" }
     );
 
-    return res.json({
-      message: "Admin login successful",
+    res.json({
+      _id: adminUser._id,
+      name: adminUser.name,
+      email: adminUser.email,
+      isAdmin: true,
       token,
     });
-  }
-
-  res.status(401).json({ message: "Invalid admin credentials" });
-};
-
-/* ============================
-   GET ALL USERS (ADMIN ONLY)
-   GET /api/users
-============================ */
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find({}).select("-password");
-
-    res.json(users);
   } catch (error) {
     res.status(500).json({
-      message: "Failed to fetch users",
-      error: error.message,
-    });
-  }
-};
-
-/* ============================
-   DELETE USER (ADMIN ONLY)
-   DELETE /api/users/:id
-============================ */
-export const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // ✅ Safety: Prevent deleting admin users
-    if (user.isAdmin) {
-      return res.status(400).json({
-        message: "Cannot delete admin user",
-      });
-    }
-
-    await user.deleteOne();
-
-    res.json({
-      message: "User deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to delete user",
+      message: "Admin login failed",
       error: error.message,
     });
   }

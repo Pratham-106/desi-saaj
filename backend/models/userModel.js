@@ -21,15 +21,25 @@ const userSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+
+    /* ============================
+       ✅ ADMIN FIELD (NEW)
+    ============================ */
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-/* 🔐 HASH PASSWORD BEFORE SAVE */
+/* ============================
+   🔐 HASH PASSWORD BEFORE SAVE
+============================ */
 userSchema.pre("save", async function (next) {
-  // ✅ IMPORTANT: stop execution if password not changed
+  // ✅ stop if password not changed
   if (!this.isModified("password")) {
     return next();
   }
@@ -39,7 +49,9 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-/* 🔑 MATCH PASSWORD FOR LOGIN */
+/* ============================
+   🔑 MATCH PASSWORD FOR LOGIN
+============================ */
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
