@@ -5,7 +5,6 @@ import {
   getOrderById,
   getAllOrders,
   updateOrderStatus,
-  markOrderDelivered,
   deleteOrder,
 } from "../controllers/orderController.js";
 
@@ -15,35 +14,31 @@ const router = express.Router();
 
 /* ============================
    CREATE ORDER
-   POST /api/orders
 ============================ */
 router.post("/", protect, createOrder);
 
 /* ============================
-   USER: MY ORDERS
-   GET /api/orders/my-orders ✅
+   USER ORDERS
 ============================ */
 router.get("/my-orders", protect, getMyOrders);
 
 /* ============================
-   ✅ ADMIN ROUTES FIRST (IMPORTANT)
+   ADMIN: ALL ORDERS
 ============================ */
-
-/* ✅ ADMIN: GET ALL ORDERS */
 router.get("/admin/all", protect, admin, getAllOrders);
 
-/* ✅ ADMIN: UPDATE STATUS */
+/* ============================
+   ADMIN: UPDATE STATUS
+============================ */
 router.put("/:id/status", protect, admin, updateOrderStatus);
 
-/* ✅ ADMIN: MARK DELIVERED */
-router.put("/:id/deliver", protect, admin, markOrderDelivered);
-
-/* ✅ ADMIN: DELETE DELIVERED ORDER */
+/* ============================
+   ADMIN: DELETE DELIVERED ORDER
+============================ */
 router.delete("/:id", protect, admin, deleteOrder);
 
 /* ============================
-   USER: GET ORDER BY ID (LAST)
-   GET /api/orders/:id
+   USER: ORDER BY ID (LAST)
 ============================ */
 router.get("/:id", protect, getOrderById);
 
