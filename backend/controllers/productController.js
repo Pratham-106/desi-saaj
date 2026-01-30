@@ -24,15 +24,13 @@ export const addProduct = async (req, res) => {
       });
     }
 
-    /* ✅ Must receive images */
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
         message: "Image upload failed",
-        error: "No images received",
       });
     }
 
-    /* ✅ Cloudinary gives direct URL in file.path */
+    // ✅ Cloudinary URL
     const images = req.files.map((file) => file.path);
 
     const product = await Product.create({
@@ -53,8 +51,8 @@ export const addProduct = async (req, res) => {
   } catch (error) {
     console.error("ADD PRODUCT ERROR:", error);
 
-    res.status(400).json({
-      message: "Image upload failed",
+    res.status(500).json({
+      message: "Server error adding product",
       error: error.message,
     });
   }
@@ -77,7 +75,7 @@ export const getProducts = async (req, res) => {
 };
 
 /* ==============================
-   ✅ TRENDING PRODUCTS
+   ✅ GET TRENDING PRODUCTS
 ============================== */
 export const getTrendingProducts = async (req, res) => {
   try {
@@ -92,7 +90,7 @@ export const getTrendingProducts = async (req, res) => {
 };
 
 /* ==============================
-   ✅ GET PRODUCT BY ID
+   ✅ GET SINGLE PRODUCT
 ============================== */
 export const getProductById = async (req, res) => {
   try {
@@ -126,13 +124,13 @@ export const deleteProduct = async (req, res) => {
 };
 
 /* ==============================
-   ✅ UPDATE PRODUCT
+   ✅ UPDATE PRODUCT (ADMIN)
 ============================== */
 export const updateProduct = async (req, res) => {
   try {
     const updatedData = { ...req.body };
 
-    /* ✅ Optional new images */
+    // ✅ Optional new Cloudinary upload
     if (req.files && req.files.length > 0) {
       updatedData.images = req.files.map((file) => file.path);
     }
@@ -146,6 +144,82 @@ export const updateProduct = async (req, res) => {
     res.json({
       message: "✅ Product updated successfully",
       product,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ ADD COMMENT (USER)
+============================== */
+export const addProductComment = async (req, res) => {
+  try {
+    const { comment } = req.body;
+
+    if (!comment || comment.trim() === "") {
+      return res.status(400).json({ message: "Comment is required" });
+    }
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
+    product.reviews.unshift({
+      user: req.user._id,
+      name: req.user.name,
+      comment,
+      likes: [],
+    });
+
+    await product.save();
+
+    res.status(201).json({
+      message: "✅ Comment added",
+      reviews: product.reviews,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ==============================
+   ✅ LIKE / UNLIKE COMMENT
+============================== */
+export const toggleCommentLike = async (req, res) => {
+  try {
+    const { productId, reviewId } = req.params;
+
+    const product = await Product.findById(productId);
+
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
+
+    const review = product.reviews.id(reviewId);
+
+    if (!review)
+      return res.status(404).json({ message: "Comment not found" });
+
+    const userId = req.user._id.toString();
+
+    const alreadyLiked = review.likes
+      .map((id) => id.toString())
+      .includes(userId);
+
+    if (alreadyLiked) {
+      review.likes = review.likes.filter(
+        (id) => id.toString() !== userId
+      );
+    } else {
+      review.likes.push(req.user._id);
+    }
+
+    await product.save();
+
+    res.json({
+      message: alreadyLiked ? "Like removed ✅" : "Liked ❤️",
+      reviews: product.reviews,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
