@@ -21,17 +21,13 @@ const storage = new CloudinaryStorage({
   },
 });
 
-/* ✅ Multer Upload Setup */
+/* ✅ Multer Upload Middleware */
 const upload = multer({
   storage,
+
   limits: {
-    fileSize: 10 * 1024 * 1024, // ✅ 10MB
+    fileSize: 10 * 1024 * 1024, // ✅ 10MB limit
   },
 });
-
-upload.on("error", (err) => {
-  console.error("Multer Upload Error:", err.message);
-});
-
 
 export default upload;
