@@ -22,8 +22,15 @@ export const addProduct = async (req, res) => {
       return res.status(400).json({ message: "Invalid stock status" });
     }
 
-    /* ✅ CLOUDINARY IMAGE URLS */
-    const images = req.files?.map((file) => file.path) || [];
+    /* ✅ Cloudinary Upload Fix */
+    const images =
+      req.files?.map((file) => file.path) || [];
+
+    if (images.length === 0) {
+      return res.status(400).json({
+        message: "No images uploaded",
+      });
+    }
 
     const product = await Product.create({
       name,
@@ -41,7 +48,12 @@ export const addProduct = async (req, res) => {
       product,
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("ADD PRODUCT ERROR:", error);
+
+    res.status(500).json({
+      message: "Server error adding product",
+      error: error.message,
+    });
   }
 };
 
