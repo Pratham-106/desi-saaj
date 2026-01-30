@@ -15,84 +15,62 @@ import {
 
 const router = express.Router();
 
-/* =========================================
-   ✅ MULTER + CLOUDINARY ERROR HANDLER
-========================================= */
-const uploadImages = (req, res, next) => {
-  upload.array("images", 5)(req, res, (err) => {
-    if (err) {
-      console.error("🔥 IMAGE UPLOAD ERROR:", err);
-
-      return res.status(400).json({
-        message: "Image upload failed ❌",
-        error: err.message,
-      });
-    }
-
-    next();
-  });
-};
-
-/*
-  ==============================
-  ✅ PRODUCT ROUTES
-  ==============================
-*/
-
-/* ✅ ADD PRODUCT (ADMIN ONLY)
+/* ==============================
+   ✅ ADD PRODUCT (ADMIN ONLY)
    POST /api/products/add
--------------------------------- */
+   ✅ LIMIT: 2 IMAGES ONLY
+============================== */
 router.post(
   "/add",
   protect,
   admin,
-  uploadImages,
+  upload.array("images", 2), // ✅ FIXED HERE
   addProduct
 );
 
-/* ✅ GET TRENDING PRODUCTS
-   GET /api/products/trending
--------------------------------- */
+/* ==============================
+   ✅ TRENDING PRODUCTS
+============================== */
 router.get("/trending", getTrendingProducts);
 
-/* ✅ GET ALL PRODUCTS
-   GET /api/products
--------------------------------- */
+/* ==============================
+   ✅ ALL PRODUCTS
+============================== */
 router.get("/", getProducts);
 
-/* ✅ GET SINGLE PRODUCT
-   GET /api/products/:id
--------------------------------- */
+/* ==============================
+   ✅ SINGLE PRODUCT
+============================== */
 router.get("/:id", getProductById);
 
-/* ✅ ADD COMMENT (USER)
-   POST /api/products/:id/comment
--------------------------------- */
+/* ==============================
+   ✅ COMMENT
+============================== */
 router.post("/:id/comment", protect, addProductComment);
 
-/* ✅ LIKE / UNLIKE COMMENT
-   PUT /api/products/:productId/comment/:reviewId/like
--------------------------------- */
+/* ==============================
+   ✅ LIKE COMMENT
+============================== */
 router.put(
   "/:productId/comment/:reviewId/like",
   protect,
   toggleCommentLike
 );
 
-/* ✅ UPDATE PRODUCT (ADMIN ONLY)
-   PUT /api/products/:id
--------------------------------- */
+/* ==============================
+   ✅ UPDATE PRODUCT (ADMIN)
+============================== */
 router.put(
   "/:id",
   protect,
   admin,
-  uploadImages,
+  upload.array("images", 2),
   updateProduct
 );
 
-/* ✅ DELETE PRODUCT (ADMIN ONLY)
-   DELETE /api/products/:id
--------------------------------- */
+/* ==============================
+   ✅ DELETE PRODUCT (ADMIN)
+============================== */
 router.delete("/:id", protect, admin, deleteProduct);
 
 export default router;
