@@ -24,9 +24,10 @@ router.post(
   "/add",
   protect,
   admin,
-  upload.array("images", 2), // ✅ FIXED HERE
+  upload.array("images", 5), // ✅ FIXED back to 5
   addProduct
 );
+
 
 /* ==============================
    ✅ TRENDING PRODUCTS
@@ -64,7 +65,7 @@ router.put(
   "/:id",
   protect,
   admin,
-  upload.array("images", 2),
+  upload.array("images", 5),
   updateProduct
 );
 

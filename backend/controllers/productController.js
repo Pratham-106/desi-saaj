@@ -26,11 +26,11 @@ export const addProduct = async (req, res) => {
 
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({
-        message: "Image upload failed",
+        message: "No images uploaded",
       });
     }
 
-    // ✅ Cloudinary URL
+    // ✅ Cloudinary gives full URL in file.path
     const images = req.files.map((file) => file.path);
 
     const product = await Product.create({
@@ -66,7 +66,10 @@ export const getProducts = async (req, res) => {
     const { category } = req.query;
 
     const filter = category ? { category } : {};
-    const products = await Product.find(filter).sort({ createdAt: -1 });
+
+    const products = await Product.find(filter).sort({
+      createdAt: -1,
+    });
 
     res.json(products);
   } catch (error) {
@@ -124,13 +127,13 @@ export const deleteProduct = async (req, res) => {
 };
 
 /* ==============================
-   ✅ UPDATE PRODUCT (ADMIN)
+   ✅ UPDATE PRODUCT
 ============================== */
 export const updateProduct = async (req, res) => {
   try {
     const updatedData = { ...req.body };
 
-    // ✅ Optional new Cloudinary upload
+    // ✅ Replace images only if uploaded
     if (req.files && req.files.length > 0) {
       updatedData.images = req.files.map((file) => file.path);
     }
@@ -151,7 +154,7 @@ export const updateProduct = async (req, res) => {
 };
 
 /* ==============================
-   ✅ ADD COMMENT (USER)
+   ✅ ADD COMMENT
 ============================== */
 export const addProductComment = async (req, res) => {
   try {
