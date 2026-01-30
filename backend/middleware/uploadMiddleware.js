@@ -5,14 +5,14 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-/* ✅ Correct Cloudinary Config */
+/* ✅ Cloudinary Config */
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-/* ✅ Storage Setup */
+/* ✅ Cloudinary Storage */
 const storage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -21,10 +21,12 @@ const storage = new CloudinaryStorage({
   },
 });
 
-/* ✅ Multer Upload */
+/* ✅ Multer Upload Setup */
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // ✅ max 5MB
+  limits: {
+    fileSize: 2 * 1024 * 1024, // ✅ 2MB max (Render Safe)
+  },
 });
 
 export default upload;
