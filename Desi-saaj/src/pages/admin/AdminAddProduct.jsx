@@ -42,7 +42,7 @@ export default function AdminAddProduct() {
   };
 
   /* ============================
-     ✅ IMAGE UPLOAD
+     ✅ IMAGE FILE INPUT
   ============================ */
   const handleImageChange = (e) => {
     setImages([...e.target.files]);
@@ -56,9 +56,9 @@ export default function AdminAddProduct() {
     setLoading(true);
 
     try {
-      /* ✅ FormData for Cloudinary Upload */
       const data = new FormData();
 
+      /* ✅ Text Fields */
       data.append("name", formData.name);
       data.append("price", formData.price);
       data.append("stockStatus", formData.stockStatus);
@@ -70,12 +70,12 @@ export default function AdminAddProduct() {
         data.append("tags", tag);
       });
 
-      /* ✅ Images (Cloudinary) */
-      images.forEach((img) => {
-        data.append("images", img);
+      /* ✅ Images MUST be key = "images" */
+      images.forEach((file) => {
+        data.append("images", file);
       });
 
-      /* ✅ ADMIN AUTH REQUIRED */
+      /* ✅ POST Request */
       await axios.post(`${API}/products/add`, data, {
         headers: {
           Authorization: `Bearer ${adminInfo.token}`,
@@ -97,10 +97,12 @@ export default function AdminAddProduct() {
 
       setImages([]);
     } catch (error) {
-      console.error(error);
+      console.error("ADD PRODUCT ERROR:", error);
 
       toast.error(
-        error.response?.data?.message || "❌ Failed to add product"
+        error.response?.data?.error || // ✅ Real multer/cloudinary error
+          error.response?.data?.message ||
+          "❌ Failed to add product"
       );
     } finally {
       setLoading(false);
@@ -169,7 +171,7 @@ export default function AdminAddProduct() {
             </select>
           </div>
 
-          {/* ✅ TRENDING TAG */}
+          {/* ✅ TRENDING */}
           <div className="form-group checkbox-group">
             <label>
               <input
