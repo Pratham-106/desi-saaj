@@ -34,22 +34,20 @@ export default function AdminAddProduct() {
     });
   };
 
-  /* ✅ Image Upload Limit Fix */
+  /* ✅ Images */
   const handleImageChange = (e) => {
-    const files = [...e.target.files];
-
-    if (files.length > 2) {
-      toast.error("Only 2 images allowed (Render free limit)");
-      return;
-    }
-
-    setImages(files);
+    setImages([...e.target.files]);
   };
 
   /* ✅ Submit */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    if (!adminInfo.token) {
+      toast.error("Admin login required!");
+      return;
+    }
 
     try {
       const data = new FormData();
@@ -62,18 +60,16 @@ export default function AdminAddProduct() {
 
       formData.tags.forEach((tag) => data.append("tags", tag));
 
-      images.forEach((file) => data.append("images", file));
+      images.forEach((img) => data.append("images", img));
 
       await axios.post(`${API}/products/add`, data, {
         headers: {
-          Authorization: `Bearer ${adminInfo.token}`,
-          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${adminInfo.token}`, // ✅ REQUIRED
         },
       });
 
-      toast.success("✅ Product added successfully!");
+      toast.success("✅ Product Added Successfully!");
 
-      /* ✅ Reset */
       setFormData({
         name: "",
         price: "",
@@ -85,10 +81,10 @@ export default function AdminAddProduct() {
 
       setImages([]);
     } catch (error) {
+      console.error("UPLOAD ERROR:", error.response?.data);
+
       toast.error(
-        error.response?.data?.error ||
-          error.response?.data?.message ||
-          "Upload Failed"
+        error.response?.data?.message || "❌ Product upload failed"
       );
     } finally {
       setLoading(false);
@@ -101,6 +97,7 @@ export default function AdminAddProduct() {
         <h1>Add New Product</h1>
 
         <form className="product-form" onSubmit={handleSubmit}>
+          {/* Name */}
           <input
             type="text"
             name="name"
@@ -110,6 +107,7 @@ export default function AdminAddProduct() {
             required
           />
 
+          {/* Price */}
           <input
             type="number"
             name="price"
@@ -119,6 +117,7 @@ export default function AdminAddProduct() {
             required
           />
 
+          {/* Stock */}
           <select
             name="stockStatus"
             value={formData.stockStatus}
@@ -129,6 +128,7 @@ export default function AdminAddProduct() {
             <option value="OUT_OF_STOCK">Out of Stock</option>
           </select>
 
+          {/* Category */}
           <select
             name="category"
             value={formData.category}
@@ -141,6 +141,7 @@ export default function AdminAddProduct() {
             <option value="Traditional">Traditional</option>
           </select>
 
+          {/* Trending */}
           <label>
             <input
               type="checkbox"
@@ -150,14 +151,17 @@ export default function AdminAddProduct() {
             Mark as Trending
           </label>
 
+          {/* Description */}
           <textarea
             name="description"
             placeholder="Description"
+            rows="4"
             value={formData.description}
             onChange={handleChange}
             required
           />
 
+          {/* Images */}
           <input
             type="file"
             multiple
@@ -166,7 +170,7 @@ export default function AdminAddProduct() {
             required
           />
 
-          <button type="submit" disabled={loading}>
+          <button disabled={loading}>
             {loading ? "Uploading..." : "Add Product"}
           </button>
         </form>
